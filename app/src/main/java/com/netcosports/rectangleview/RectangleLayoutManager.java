@@ -25,16 +25,17 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
      */
     private int horizontalScrollingDistance = 0;
 
+    private int verticalScrollingDistance = 0;
 
     /**
-     * First Visible position (which is changed on scroll)
-     */
-    private int mFirstPosition = 0;
-
-    /**
-     * First Next Invisible position (in the Recycle-Pool)
+     * First Next Invisible position when scrolling from right to left (in the Recycle-Pool)
      */
     private int mNextIndex = 0;
+
+    /**
+     * First Next Invisible position scrolling from left to right (in the Recycle-Pool)
+     */
+    private int mNextIndexInverse = 0;
 
     private int top1;
     private int bottom1;
@@ -66,10 +67,9 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     /**
      * Draw all Visible Childs
-     * <p/>
      * Pay Attention : there are two main cases :
      * 1/. 1st time filling (from scratch)
-     * 2/. DataSet is changing (not for the moment, we take care of this case before)
+     * 2/. DataSet is changing (not for the moment, we take care of this case after)
      *
      * @param recycler
      * @param state
@@ -193,12 +193,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                 needFill = false;
 
                 horizontalScrollingDistance = screenWidth;
+                verticalScrollingDistance = getHeight();
 
-                mFirstPosition = -1;
                 mNextIndex = i;
+                mNextIndexInverse = getItemCount();
 
-                Log.i("inital mFirstPosition ", "" + mFirstPosition);
                 Log.i("inital mNextIndex ", "" + mNextIndex);
+                Log.i("inital mNextIndexInverse ", "" + mNextIndexInverse);
             }
         }
     }
@@ -265,7 +266,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
              *
              */
 
-            if (mFirstPosition == -1) {
+            if (mNextIndexInverse == getItemCount()) {
                 int distanceAfterLast = mData.get(0).start_time - horizontalScrollingDistance + screenWidth;
 
                 if (dx > distanceAfterLast) {
@@ -282,9 +283,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                     scrolled = -distanceAfterLast;
                 }
-
-            } else if (mFirstPosition > -1) {
-                int distanceAfterLast = mData.get(mFirstPosition).end_time - horizontalScrollingDistance + screenWidth;
+            } else if (mNextIndexInverse < getItemCount()) {
+                int distanceAfterLast = getProgramByIndexInverse().end_time - horizontalScrollingDistance + screenWidth;
 
                 /**
                  * in this case all views will be scrolled by dx because there is no view which will be added
@@ -294,6 +294,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                     offsetChildrenHorizontal(-dx);
                 }
+
                 /**
                  * in this case we check if there are possible next childs view
                  *
@@ -305,20 +306,20 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     /**
                      * Initialize all possible childs
                      */
-                    while (mFirstPosition > -1 &&
-                            mData.get(mFirstPosition).end_time - horizontalScrollingDistance + screenWidth >= dx) {
+                    while (mNextIndexInverse < getItemCount() &&
+                            getProgramByIndexInverse().end_time - horizontalScrollingDistance + screenWidth >= dx) {
 
-                        View leftView = recycler.getViewForPosition(mFirstPosition);
+                        View leftView = recycler.getViewForPosition(getProgramByIndexInverse().positionOrderedByStartTime);
 
                         addView(leftView);
 
                         measureChildWithMargins(leftView, 0, 0);
 
-                        Log.i("add view at index", "" + mFirstPosition);
+                        Log.i("add view at index", "" + getProgramByIndexInverse().positionOrderedByStartTime);
 
                         onLayoutLeftView(leftView);
 
-                        mFirstPosition--;
+                        mNextIndexInverse++;
                     }
 
                     horizontalScrollingDistance += dx;
@@ -327,9 +328,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                 scrolled = -dx;
             }
-
-            Log.i("TAG", "**********************");
-
         } else if (dx > 0) {
 
             /**
@@ -425,6 +423,15 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         return -scrolled;
     }
 
+    private Program getProgramByIndexInverse() {
+        for (Program program : mData) {
+            if (program.positionOrderedByEndTime == mNextIndexInverse) {
+                return program;
+            }
+        }
+        return null;
+    }
+
     private void onInitialLayout(final View v) {
         if (v.getTag() != null) {
             Program program = (Program) v.getTag();
@@ -470,8 +477,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private void onLayoutLeftView(final View v) {
-        if (mFirstPosition > -1) {
-            Program program = mData.get(mFirstPosition);
+        if (mNextIndexInverse < mData.size()) {
+            Program program = getProgramByIndexInverse();
 
             Log.i("add program", program.name);
 
@@ -531,11 +538,24 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             removeAndRecycleViewAt(i, recycler);
         }
 
-        mFirstPosition = ((Program) getChildAt(0).getTag()).position - 1;
+        Log.i("first", "" + first);
+        Log.i("last", "" + last);
 
-        mNextIndex = ((Program)getChildAt(getChildCount() - 1).getTag()).position + 1;
+        int x = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            final View v = getChildAt(i);
+            Program program = (Program) v.getTag();
 
-        Log.i("mFirstPosition", "" + mFirstPosition);
+            if (program.positionOrderedByEndTime > x) {
+                x = program.positionOrderedByEndTime;
+            }
+        }
+
+        mNextIndexInverse = x + 1;
+
+        mNextIndex = ((Program) getChildAt(getChildCount() - 1).getTag()).positionOrderedByStartTime + 1;
+
+        Log.i("mNextIndexInverse", "" + mNextIndexInverse);
         Log.i("mNextIndex", "" + mNextIndex);
     }
 
@@ -548,8 +568,60 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         return true;
     }
 
+    /**
+     * We distinct two cases :
+     * <p/>
+     * dy < 0 : RecyclerView is pulling down or flinging down (pull or fling from top to bottom) : all views are scrolling up (ex : index 50 -> 40)
+     * dy > 0 : RecyclerView is pulling up or flinging up (pull or fling from bottom to top) : all views are scrolling down (ex : index 40 -> 50)
+     * <p/>
+     * Pay attention : when we pull or fling the view (even if there is no possible additional view : dy take a value # 0)
+     *
+     * @param dy
+     * @param recycler
+     * @param state
+     * @return
+     */
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
+
+//        int scrolled;
+//
+//        if (dy > 0) {
+//            int distance = 4 * getHeight() / 3 - verticalScrollingDistance;
+//            if (dy < distance) {
+//                verticalScrollingDistance += dy;
+//
+//                offsetChildrenVertical(-dy);
+//
+//                scrolled = -dy;
+//            }
+//            else {
+//                verticalScrollingDistance += distance;
+//
+//                offsetChildrenVertical(-distance);
+//
+//                scrolled = -distance;
+//            }
+//        }
+//        else {
+//            int distance = verticalScrollingDistance - 4 * getHeight() / 3;
+//            if (dy > distance) {
+//                verticalScrollingDistance += dy;
+//
+//                offsetChildrenVertical(-dy);
+//
+//                scrolled = -dy;
+//            }
+//            else {
+//                verticalScrollingDistance += distance;
+//
+//                offsetChildrenVertical(-distance);
+//
+//                scrolled = -distance;
+//            }
+//        }
+//
+//        return -scrolled;
         return dy;
     }
 }

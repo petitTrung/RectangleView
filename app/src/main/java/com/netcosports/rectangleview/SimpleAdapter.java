@@ -49,10 +49,14 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        viewHolder.mTextView.setText("Position : " + position + "\nStart : " + mData.get(position).start_time + "\nDuration : " + mData.get(position).duration + "\n" + mData.get(position).name);
+        viewHolder.mTextView.setText("Position : " + position +
+                "\nStart : " + mData.get(position).start_time +
+                "\nDuration : " + mData.get(position).duration +
+                "\n" + mData.get(position).name +
+                "\n" + mData.get(position).positionOrderedByStartTime +
+                "\n" + mData.get(position).positionOrderedByEndTime);
         viewHolder.mTextView.setTag(mData.get(position));
         viewHolder.mTextView.setWidth(mData.get(position).duration);
-//        viewHolder.mTextView.setMinWidth((mData.get(position).duration));
         viewHolder.mTextView.setBackgroundColor(generateDummyColor());
 
         viewHolder.mTextView.setOnClickListener(new View.OnClickListener() {

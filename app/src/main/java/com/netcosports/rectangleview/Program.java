@@ -7,9 +7,9 @@ import java.util.Comparator;
 /**
  * Created by trung on 30/01/15.
  */
-public class Program implements Comparable<Program>, Comparator<Program> {
+public class Program{
 
-    public int position;
+    public int positionOrderedByStartTime, positionOrderedByEndTime;
     public int channel;
     public int start_time, end_time;
     public int duration;
@@ -23,47 +23,12 @@ public class Program implements Comparable<Program>, Comparator<Program> {
         this.name = name;
     }
 
-    public void setPosition(int position) {
-        this.position = position;
+    public void setPositionOrderedByStartTime(int position) {
+        this.positionOrderedByStartTime = position;
     }
 
-
-    @Override
-    public int compareTo(Program another) {
-        if (start_time > another.start_time) {
-            return 1;
-        }
-        else {
-            if (start_time < another.start_time) {
-                return -1;
-            }
-            else {
-                if (end_time > another.end_time) {
-                    return 1;
-                }
-                else if (end_time < another.end_time) {
-                    return -1;
-                }
-                else {
-                    if (channel > another.channel) {
-                        return 1;
-                    }
-                    else if (channel < another.channel) {
-                        return -1;
-                    }
-                    return 0;
-                }
-            }
-        }
-    }
-
-    @Override
-    public int compare(Program lhs, Program rhs) {
-        if (lhs.start_time - rhs.start_time != 0) {
-            return (lhs.start_time - rhs.start_time);
-        }
-
-        return (lhs.end_time - rhs.end_time);
+    public void setPositionOrderedByEndTime(int position) {
+        this.positionOrderedByEndTime = position;
     }
 
     public static ArrayList<Program> generateDummyPrograms() {
@@ -75,11 +40,12 @@ public class Program implements Comparable<Program>, Comparator<Program> {
         x.add(new Program(1, 190, 10, "A4"));
         x.add(new Program(1, 200, 70, "A5"));
         x.add(new Program(1, 270, 35, "A6"));
-        x.add(new Program(1, 235, 70, "A7"));
-        x.add(new Program(1, 305, 35, "A8"));
-        x.add(new Program(1, 340, 70, "A9"));
-        x.add(new Program(1, 410, 35, "A10"));
-        x.add(new Program(1, 450, 40, "A11"));
+        x.add(new Program(1, 305, 35, "A7"));
+        x.add(new Program(1, 340, 70, "A8"));
+        x.add(new Program(1, 410, 35, "A9"));
+        x.add(new Program(1, 450, 40, "A10"));
+        x.add(new Program(1, 500, 60, "A11"));
+
 
         x.add(new Program(2, 40, 40, "B1"));//Should be painted in the first step
         x.add(new Program(2, 80, 60, "B2"));
@@ -102,18 +68,54 @@ public class Program implements Comparable<Program>, Comparator<Program> {
         x.add(new Program(3, 500, 15, "C9"));
         x.add(new Program(3, 515, 100, "C10"));
 
-//        x.add(new Program(4, 10, 40, "D1"));//Should be painted in the first step
-//        x.add(new Program(4, 50, 80, "D2"));//Should be painted in the first step
-//        x.add(new Program(4, 130, 60, "D3"));
-//        x.add(new Program(4, 210, 40, "D4"));
-//        x.add(new Program(4, 250, 80, "D5"));
-//        x.add(new Program(4, 330, 20, "D6"));
+        x.add(new Program(4, 10, 40, "D1"));//Should be painted in the first step
+        x.add(new Program(4, 50, 80, "D2"));//Should be painted in the first step
+        x.add(new Program(4, 130, 60, "D3"));
+        x.add(new Program(4, 210, 40, "D4"));
+        x.add(new Program(4, 250, 80, "D5"));
+        x.add(new Program(4, 330, 20, "D6"));
 
-        Collections.sort(x);
+
+        Collections.sort(x, new Comparator<Program>() {
+            @Override
+            public int compare(Program lhs, Program rhs) {
+                if (rhs.end_time - lhs.end_time != 0) {
+                    return (rhs.end_time - lhs.end_time);
+                }
+
+                return (rhs.start_time - lhs.start_time);
+            }
+        });
+        for (int i = 0; i < x.size(); i++) {
+            x.get(i).setPositionOrderedByEndTime(i);
+        }
+
+
+        Collections.sort(x, new Comparator<Program>() {
+            @Override
+            public int compare(Program lhs, Program rhs) {
+                if (lhs.start_time - rhs.start_time != 0) {
+                    return (lhs.start_time - rhs.start_time);
+                }
+
+                return (lhs.end_time - rhs.end_time);
+            }
+        });
 
         for (int i = 0; i < x.size(); i++) {
-            x.get(i).setPosition(i);
+            x.get(i).setPositionOrderedByStartTime(i);
         }
+
+//        Collections.sort(x, new Comparator<Program>() {
+//            @Override
+//            public int compare(Program lhs, Program rhs) {
+//                if (rhs.end_time - lhs.end_time != 0) {
+//                    return (rhs.end_time - lhs.end_time);
+//                }
+//
+//                return (rhs.start_time - lhs.start_time);
+//            }
+//        });
 
         return x;
     }
