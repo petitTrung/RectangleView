@@ -584,6 +584,9 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
 
+        /**
+         * Must modify values top[i] & bottom[i]
+         */
 //        int scrolled;
 //
 //        if (dy > 0) {
