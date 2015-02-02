@@ -9,6 +9,7 @@ import java.util.Comparator;
  */
 public class Program implements Comparable<Program>, Comparator<Program> {
 
+    public int position;
     public int channel;
     public int start_time, end_time;
     public int duration;
@@ -20,6 +21,10 @@ public class Program implements Comparable<Program>, Comparator<Program> {
         this.duration = duration * 10;
         this.end_time = this.start_time + this.duration;
         this.name = name;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 
 
@@ -43,12 +48,17 @@ public class Program implements Comparable<Program>, Comparator<Program> {
     public static ArrayList<Program> generateDummyPrograms() {
         ArrayList<Program> x = new ArrayList<>();
 
-        x.add(new Program(1, 20, 60, "A1"));//Should be painted in the first step
+        x.add(new Program(1, 0, 80, "A1"));//Should be painted in the first step
         x.add(new Program(1, 80, 70, "A2"));
         x.add(new Program(1, 150, 40, "A3"));
         x.add(new Program(1, 190, 10, "A4"));
         x.add(new Program(1, 200, 70, "A5"));
         x.add(new Program(1, 270, 35, "A6"));
+        x.add(new Program(1, 235, 70, "A7"));
+        x.add(new Program(1, 305, 35, "A8"));
+        x.add(new Program(1, 340, 70, "A9"));
+        x.add(new Program(1, 410, 35, "A10"));
+        x.add(new Program(1, 450, 40, "A11"));
 
         x.add(new Program(2, 40, 40, "B1"));//Should be painted in the first step
         x.add(new Program(2, 80, 60, "B2"));
@@ -56,6 +66,9 @@ public class Program implements Comparable<Program>, Comparator<Program> {
         x.add(new Program(2, 200, 55, "B4"));
         x.add(new Program(2, 255, 70, "B5"));
         x.add(new Program(2, 325, 60, "B6"));
+        x.add(new Program(2, 385, 70, "B7"));
+        x.add(new Program(2, 500, 60, "B8"));
+        x.add(new Program(2, 600, 60, "B9"));
 
         x.add(new Program(3, 25, 200, "C1"));//Should be painted in the first step
         x.add(new Program(3, 225, 40, "C2"));
@@ -65,6 +78,8 @@ public class Program implements Comparable<Program>, Comparator<Program> {
         x.add(new Program(3, 360, 40, "C6"));
         x.add(new Program(3, 400, 15, "C7"));
         x.add(new Program(3, 415, 20, "C8"));
+        x.add(new Program(3, 500, 15, "C9"));
+        x.add(new Program(3, 515, 100, "C10"));
 
 //        x.add(new Program(4, 10, 40, "D1"));//Should be painted in the first step
 //        x.add(new Program(4, 50, 80, "D2"));//Should be painted in the first step
@@ -74,6 +89,10 @@ public class Program implements Comparable<Program>, Comparator<Program> {
 //        x.add(new Program(4, 330, 20, "D6"));
 
         Collections.sort(x);
+
+        for (int i = 0; i < x.size(); i++) {
+            x.get(i).setPosition(i);
+        }
 
         return x;
     }

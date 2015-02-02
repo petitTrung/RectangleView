@@ -23,18 +23,18 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     /**
      * This element allows us to know if we reach some news Childs View
      */
-    private int verticalScrollingDistance = 0;
+    private int horizontalScrollingDistance = 0;
 
 
     /**
      * First Visible position (which is changed on scroll)
      */
-    private int mFirstPosition;
+    private int mFirstPosition = 0;
 
     /**
-     * First Next Invisible position
+     * First Next Invisible position (in the Recycle-Pool)
      */
-    private int nextIndex = 0;
+    private int mNextIndex = 0;
 
     private int top1;
     private int bottom1;
@@ -66,7 +66,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     /**
      * Draw all Visible Childs
-     *
+     * <p/>
      * Pay Attention : there are two main cases :
      * 1/. 1st time filling (from scratch)
      * 2/. DataSet is changing (not for the moment, we take care of this case before)
@@ -77,6 +77,9 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
 
+        /**
+         * Initialize top & bottom of view for a given channel
+         */
         top1 = 0;
         bottom1 = getHeight() / 3;
 
@@ -145,7 +148,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
          */
         int i = 0;
         boolean needFill = true;
-        while (mFirstPosition + i < count && needFill) {
+        while (i < count && needFill) {
 
             /**
              * Retrieving from the Recycler-Pool or Creating a new fresh View for the position (mFirstPosition + i)
@@ -154,7 +157,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
              *
              * Recycler-Pool > Creating a fresh View
              */
-            View v = recycler.getViewForPosition(mFirstPosition + i);
+            View v = recycler.getViewForPosition(i);
 
             /**
              * Adding this View to current RecyclerView for the i-th position
@@ -184,13 +187,18 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             /**
              * Verify "screenWidth"
              */
-            if (mFirstPosition + i < count && mData.get(mFirstPosition + i).start_time < screenWidth) {
+            if (i < count && mData.get(i).start_time < screenWidth) {
                 needFill = true;
             } else {
                 needFill = false;
 
-                verticalScrollingDistance = screenWidth;
-                nextIndex = mFirstPosition + i;
+                horizontalScrollingDistance = screenWidth;
+
+                mFirstPosition = -1;
+                mNextIndex = i;
+
+                Log.i("inital mFirstPosition ", "" + mFirstPosition);
+                Log.i("inital mNextIndex ", "" + mNextIndex);
             }
         }
     }
@@ -230,7 +238,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             return 0;
         }
 
-
         int scrolled = 0;
 
         if (dx < 0) {
@@ -238,216 +245,175 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             /**
              * We determine when we need to fill the left gap
              *
-             * Suppose that initial verticalScrollingDistance = 830, the first two items were in Recycle-Pool
+             * Suppose that initial horizontalScrollingDistance = 1550 (720 + 830), the first two items (A1 & B1) were in Recycle-Pool
              *
              * 2 CASES :
              *
-             * CASE A/. Assume that dx = 10 so verticalScrollingDistance will be 820 < 800 (NOT NEED to fill)
+             * CASE A/. Assume that dx = 10 so horizontalScrollingDistance will be 1550 - 720 - 10 = 820 > 800 (NOT NEED to fill)
              * Scroll all child by 10
              *
-             * CASE B/. Assume that dx = 100 so verticalScrollingDistance will be 730 < 800 (NEED to fill, A1 and B1, remember that B1 take the priority). There are 2 steps :
+             * CASE B/. Assume that dx = 100 so horizontalScrollingDistance will be 1550 - 720 - 100 = 730 < 800 (NEED to fill, B1 and A1, remember that B1 take the priority).
+             * There are 2 steps :
              *
              * 1/. Fill the left gap
              *
-             * 2/. Remove possible useless ChildView
+             * 2/. Scroll all by dx
              *
-             * a/. We scroll firstly by 30 and we initialize B1 & A1
+             * 3/. Remove possible useless ChildView
              *
-             * b/. We continue scrolling secondly by the rest of dx or by 70
+             * Remember that if the current index is the last index, we must to compare the last Child's end_time with the total Scrolling (not the start_time)
              *
              */
 
-            if (mFirstPosition >= 0) {
+            if (mFirstPosition == -1) {
+                int distanceAfterLast = mData.get(0).start_time - horizontalScrollingDistance + screenWidth;
 
-                while (dx < scrolled && mFirstPosition >= 0) { //-100 < 0; -100 < -30
+                if (dx > distanceAfterLast) {
 
-                    if (mFirstPosition == 0) {
-                        int distanceAfterLast = mData.get(0).end_time - verticalScrollingDistance; // -30; 0
-                        Log.i("distanceAfterLast", "" + distanceAfterLast);
+                    horizontalScrollingDistance += dx;
 
-                        Log.i("dx", "" + dx);
-                        Log.i("scrolled before", "" + scrolled);
+                    offsetChildrenHorizontal(-dx);
 
-                        int scrollBy = -Math.min(-distanceAfterLast, scrolled - dx); //-min(30, 0 - (-100) = 100) = -30; -min(0, -30 - (-100) = 70) = -70
+                    scrolled = -dx;
+                } else {
+                    horizontalScrollingDistance += distanceAfterLast;
+                    offsetChildrenHorizontal(-distanceAfterLast);
 
-                        Log.i("scrollBy", "" + scrollBy);
-
-                        if (distanceAfterLast != 0) {
-
-                            scrolled += scrollBy; // = -30; -100
-
-                            Log.i("scrolled after", "" + scrolled);
-
-                            /**
-                             * Step a/. b/.
-                             */
-                            offsetChildrenHorizontal(-scrollBy); //30, 70
-
-                            verticalScrollingDistance += scrollBy;
-                        } else {
-                            break;
-                        }
-                    } else {
-                        Log.i("mFirstPosition", "" + mFirstPosition);
-
-                        int distanceAfterLast = mData.get(mFirstPosition - 1).end_time - verticalScrollingDistance; // -30; 0
-                        Log.i("distanceAfterLast", "" + distanceAfterLast);
-
-                        Log.i("dx", "" + dx);
-                        Log.i("scrolled before", "" + scrolled);
-
-                        int scrollBy = -Math.min(-distanceAfterLast, scrolled - dx); //-min(30, 0 - (-100) = 100) = -30; -min(0, -30 - (-100) = 70) = -70
-
-                        Log.i("scrollBy", "" + scrollBy);
-
-                        scrolled += scrollBy; // = 80; 100
-
-                        Log.i("scrolled after", "" + scrolled);
-
-                        /**
-                         * Step a/. b/.
-                         */
-                        offsetChildrenHorizontal(-scrollBy); //-80, -20
-
-                        if (dx > scrolled) {
-
-                            while (mFirstPosition - 1 > 0 && mData.get(mFirstPosition - 1).end_time > verticalScrollingDistance - dx) {
-                                View rightView = recycler.getViewForPosition(mFirstPosition -1);
-
-                                addView(rightView);
-
-                                measureChildWithMargins(rightView, 0, 0);
-
-                                Log.i("add view at index", "" + (mFirstPosition - 1));
-
-                                onLayoutLeftView(rightView);
-
-                                mFirstPosition--;
-                            }
-
-                            verticalScrollingDistance += scrollBy;
-
-                            Log.i("verticalScrollingDistance", "" + verticalScrollingDistance);
-
-                        } else {
-
-                            verticalScrollingDistance += scrollBy;
-
-                            Log.i("verticalScrollingDistance", "" + verticalScrollingDistance);
-                            break;
-                        }
-                    }
+                    scrolled = -distanceAfterLast;
                 }
-                Log.i("TAG", "**********************");
+
+            } else if (mFirstPosition > -1) {
+                int distanceAfterLast = mData.get(mFirstPosition).end_time - horizontalScrollingDistance + screenWidth;
+
+                /**
+                 * in this case all views will be scrolled by dx because there is no view which will be added
+                 */
+                if (dx > distanceAfterLast) {
+                    horizontalScrollingDistance += dx;
+
+                    offsetChildrenHorizontal(-dx);
+                }
+                /**
+                 * in this case we check if there are possible next childs view
+                 *
+                 * if there is no child view, return 0
+                 * else we have to create all next childs before scrolling operation
+                 *
+                 */
+                else {
+                    /**
+                     * Initialize all possible childs
+                     */
+                    while (mFirstPosition > -1 &&
+                            mData.get(mFirstPosition).end_time - horizontalScrollingDistance + screenWidth >= dx) {
+
+                        View leftView = recycler.getViewForPosition(mFirstPosition);
+
+                        addView(leftView);
+
+                        measureChildWithMargins(leftView, 0, 0);
+
+                        Log.i("add view at index", "" + mFirstPosition);
+
+                        onLayoutLeftView(leftView);
+
+                        mFirstPosition--;
+                    }
+
+                    horizontalScrollingDistance += dx;
+                    offsetChildrenHorizontal(-dx);
+                }
+
+                scrolled = -dx;
             }
+
+            Log.i("TAG", "**********************");
 
         } else if (dx > 0) {
 
             /**
              * We determine when we need to fill the right gap
              *
-             * initial verticalScrollingDistance = 720
+             * initial horizontalScrollingDistance = 720
              *
              * 2 CASES :
              *
-             * CASE A/. Assume that dx = 10 so verticalScrollingDistance will be 730 < 800 (NOT NEED to fill)
+             * CASE A/. Assume that dx = 10 so horizontalScrollingDistance will be 730 < 800 (NOT NEED to fill)
              * Scroll all child by 10
              *
-             * CASE B/. Assume that dx = 100 so verticalScrollingDistance will be 820 > 800 (NEED to fill, A2 and B2, remember that A2 take the priority). There are 2 steps :
+             * CASE B/. Assume that dx = 100 so horizontalScrollingDistance will be 820 > 800 (NEED to fill, A2 and B2, remember that A2 take the priority).
+             * There are 2 steps :
              *
              * 1/. Fill the right gap
              *
-             * 2/. Remove possible useless ChildView
+             * 2/. Scroll all by dx
              *
-             * a/. We scroll firstly by 80 and we initialize A2 & B2
+             * 3/. Remove possible useless ChildView
              *
-             * b/. We continue scrolling secondly by the rest of dx or by 20
+             * Remember that if the current index is the last index, we must to compare the last Child's end_time with the total Scrolling (not the start_time)
              *
              */
 
-            if (nextIndex <= getItemCount()) {
+            if (mNextIndex == getItemCount()) {
+                int distanceBeforeNext = mData.get(mNextIndex - 1).end_time - horizontalScrollingDistance;
 
-                while (dx > scrolled && nextIndex <= getItemCount()) {
+                if (distanceBeforeNext > dx) {
+                    horizontalScrollingDistance += dx;
 
-                    if (nextIndex == getItemCount()) {
-                        int distanceBeforeNext = mData.get(nextIndex - 1).end_time - verticalScrollingDistance;
-                        Log.i("distanceBeforeNext", "" + distanceBeforeNext);
+                    offsetChildrenHorizontal(-dx);
 
-                        Log.i("dx", "" + dx);
-                        Log.i("scrolled before", "" + scrolled);
+                    scrolled = -dx;
+                } else {
+                    horizontalScrollingDistance += distanceBeforeNext;
+                    offsetChildrenHorizontal(-distanceBeforeNext);
 
-                        int scrollBy = Math.min(distanceBeforeNext, dx - scrolled);
-
-                        Log.i("scrollBy", "" + scrollBy);
-
-                        if (scrollBy > 0) {
-
-                            scrolled += scrollBy; // = 80; 100
-
-                            Log.i("scrolled after", "" + scrolled);
-
-                            /**
-                             * Step a/.
-                             */
-                            offsetChildrenHorizontal(-scrollBy); //-80, -20
-
-                            verticalScrollingDistance += scrollBy;
-                        } else {
-                            break;
-                        }
-                    } else {
-                        Log.i("index", "" + nextIndex);
-
-                        int distanceBeforeNext = mData.get(nextIndex).start_time - verticalScrollingDistance;
-                        Log.i("distanceBeforeNext", "" + distanceBeforeNext);
-
-                        Log.i("dx", "" + dx);
-                        Log.i("scrolled before", "" + scrolled);
-
-                        int scrollBy = Math.min(distanceBeforeNext, dx - scrolled);//min(80, 100) = 80; min(80,20) = 20
-
-                        Log.i("scrollBy", "" + scrollBy);
-
-                        scrolled += scrollBy; // = 80; 100
-
-                        Log.i("scrolled after", "" + scrolled);
-
-                        /**
-                         * Step a/.
-                         */
-                        offsetChildrenHorizontal(-scrollBy); //-80, -20
-
-                        if (dx > scrolled) {
-
-                            while (nextIndex < getItemCount() && mData.get(nextIndex).start_time < dx + verticalScrollingDistance) {
-                                View rightView = recycler.getViewForPosition(nextIndex);
-
-                                addView(rightView);
-
-                                measureChildWithMargins(rightView, 0, 0);
-
-                                Log.i("add view at index", "" + nextIndex);
-
-                                onLayoutRightView(rightView);
-
-                                nextIndex++;
-                            }
-
-                            verticalScrollingDistance += scrollBy;
-
-                            Log.i("verticalScrollingDistance", "" + verticalScrollingDistance);
-
-                        } else {
-
-                            verticalScrollingDistance += scrollBy;
-
-                            Log.i("verticalScrollingDistance", "" + verticalScrollingDistance);
-                            break;
-                        }
-                    }
+                    scrolled = -distanceBeforeNext;
                 }
-                Log.i("TAG", "**********************");
+
+            } else if (mNextIndex < getItemCount()) {
+                int distanceBeforeNext = mData.get(mNextIndex).start_time - horizontalScrollingDistance;
+
+                /**
+                 * in this case all views will be scrolled by dx because there is no view which will be added
+                 */
+                if (distanceBeforeNext > dx) {
+                    horizontalScrollingDistance += dx;
+
+                    offsetChildrenHorizontal(-dx);
+                }
+                /**
+                 * in this case we check if there are possible next childs view
+                 *
+                 * if there is no child view, return 0
+                 * else we have to create all next childs before scrolling operation
+                 *
+                 */
+                else {
+                    /**
+                     * Initialize all possible childs
+                     */
+                    while (mNextIndex < getItemCount() && mData.get(mNextIndex).start_time <= dx + horizontalScrollingDistance) {
+                        View rightView = recycler.getViewForPosition(mNextIndex);
+
+                        addView(rightView);
+
+                        measureChildWithMargins(rightView, 0, 0);
+
+                        Log.i("add view at index", "" + mNextIndex);
+
+                        onLayoutRightView(rightView);
+
+                        mNextIndex++;
+                    }
+
+                    horizontalScrollingDistance += dx;
+                    offsetChildrenHorizontal(-dx);
+                }
+
+                scrolled = -dx;
             }
+
+            Log.i("TAG", "**********************");
         }
 
         /**
@@ -478,42 +444,51 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private void onLayoutRightView(final View v) {
-        if (nextIndex < mData.size()) {
-            Program program = mData.get(nextIndex);
+        if (mNextIndex < mData.size()) {
+            Program program = mData.get(mNextIndex);
             Log.i("add program", program.name);
-            Log.i("left", "" + screenWidth);
-            Log.i("right", "" + program.duration);
+
+            int left = (program.start_time - horizontalScrollingDistance) + screenWidth;
+            int right = left + program.duration;
+
+            Log.i("left", "" + left);
+            Log.i("right", "" + right);
 
             if (program != null) {
                 if (program.channel == 2) {
-                    layoutDecorated(v, screenWidth, top2, screenWidth + program.duration, bottom2);
+                    layoutDecorated(v, left, top2, right, bottom2);
                 } else if (program.channel == 3) {
-                    layoutDecorated(v, screenWidth, top3, screenWidth + program.duration, bottom3);
+                    layoutDecorated(v, left, top3, right, bottom3);
                 } else if (program.channel == 4) {
-                    layoutDecorated(v, screenWidth, top4, screenWidth + program.duration, bottom4);
+                    layoutDecorated(v, left, top4, right, bottom4);
                 } else {
-                    layoutDecorated(v, screenWidth, top1, screenWidth + program.duration, bottom1);
+                    layoutDecorated(v, left, top1, right, bottom1);
                 }
             }
         }
     }
 
     private void onLayoutLeftView(final View v) {
-        if (mFirstPosition > 0) {
+        if (mFirstPosition >= 0) {
             Program program = mData.get(mFirstPosition);
+
             Log.i("add program", program.name);
-            Log.i("left", "-" + program.duration);
-            Log.i("right", "" + 0);
+
+            int right = program.end_time - horizontalScrollingDistance + screenWidth;
+            int left = right - program.duration;
+
+            Log.i("left", "" + left);
+            Log.i("right", "" + right);
 
             if (program != null) {
                 if (program.channel == 2) {
-                    layoutDecorated(v, -1 * program.duration, top2, 0, bottom2);
+                    layoutDecorated(v, left, top2, right, bottom2);
                 } else if (program.channel == 3) {
-                    layoutDecorated(v, -1 * program.duration, top3, 0, bottom3);
+                    layoutDecorated(v, left, top3, right, bottom3);
                 } else if (program.channel == 4) {
-                    layoutDecorated(v, -1 * program.duration, top4, 0, bottom4);
+                    layoutDecorated(v, left, top4, right, bottom4);
                 } else {
-                    layoutDecorated(v, -1 * program.duration, top1, 0, bottom1);
+                    layoutDecorated(v, left, top1, right, bottom1);
                 }
             }
         }
@@ -521,6 +496,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     public void recycleViewsOutOfBounds(RecyclerView.Recycler recycler) {
         final int childCount = getChildCount();
+
         final int parentWidth = getWidth();
         final int parentHeight = getHeight();
         boolean foundFirst = false;
@@ -528,10 +504,10 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         int last = 0;
         for (int i = 0; i < childCount; i++) {
             final View v = getChildAt(i);
-            if (v.hasFocus() || (getDecoratedRight(v) >= 0 &&
+            if (getDecoratedRight(v) >= 0 &&
                     getDecoratedLeft(v) <= parentWidth &&
                     getDecoratedBottom(v) >= 0 &&
-                    getDecoratedTop(v) <= parentHeight)) {
+                    getDecoratedTop(v) <= parentHeight) {
                 if (!foundFirst) {
                     first = i;
                     foundFirst = true;
@@ -553,13 +529,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         for (int i = first - 1; i >= 0; i--) {
             removeAndRecycleViewAt(i, recycler);
         }
-        if (getChildCount() == 0) {
-            mFirstPosition = 0;
-        } else {
-            mFirstPosition += first;
-        }
+
+        mFirstPosition = ((Program) getChildAt(0).getTag()).position - 1;
+
+        mNextIndex = ((Program)getChildAt(getChildCount() - 1).getTag()).position + 1;
 
         Log.i("mFirstPosition", "" + mFirstPosition);
+        Log.i("mNextIndex", "" + mNextIndex);
     }
 
 
