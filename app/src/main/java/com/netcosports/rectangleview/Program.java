@@ -33,7 +33,28 @@ public class Program implements Comparable<Program>, Comparator<Program> {
         if (start_time > another.start_time) {
             return 1;
         }
-        return (start_time < another.start_time ? -1 : 0);
+        else {
+            if (start_time < another.start_time) {
+                return -1;
+            }
+            else {
+                if (end_time > another.end_time) {
+                    return 1;
+                }
+                else if (end_time < another.end_time) {
+                    return -1;
+                }
+                else {
+                    if (channel > another.channel) {
+                        return 1;
+                    }
+                    else if (channel < another.channel) {
+                        return -1;
+                    }
+                    return 0;
+                }
+            }
+        }
     }
 
     @Override
@@ -42,7 +63,7 @@ public class Program implements Comparable<Program>, Comparator<Program> {
             return (lhs.start_time - rhs.start_time);
         }
 
-        return (lhs.channel - rhs.channel);
+        return (lhs.end_time - rhs.end_time);
     }
 
     public static ArrayList<Program> generateDummyPrograms() {

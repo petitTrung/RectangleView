@@ -277,6 +277,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     scrolled = -dx;
                 } else {
                     horizontalScrollingDistance += distanceAfterLast;
+
                     offsetChildrenHorizontal(-distanceAfterLast);
 
                     scrolled = -distanceAfterLast;
@@ -469,7 +470,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private void onLayoutLeftView(final View v) {
-        if (mFirstPosition >= 0) {
+        if (mFirstPosition > -1) {
             Program program = mData.get(mFirstPosition);
 
             Log.i("add program", program.name);
