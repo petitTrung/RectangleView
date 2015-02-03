@@ -38,7 +38,7 @@ public class Program {
         this.positionOrderedByEndTime = position;
     }
 
-    public static ArrayList<Program> generateDummyPrograms() {
+    public static ArrayList<Program> generateFirstDummyPrograms() {
         ArrayList<Program> x = new ArrayList<>();
 
         x.add(new Program(1, 0, 80, "A1"));//Should be painted in the first step
@@ -52,7 +52,21 @@ public class Program {
         x.add(new Program(1, 410, 35, "A9"));
         x.add(new Program(1, 450, 40, "A10"));
         x.add(new Program(1, 500, 60, "A11"));
+        x.add(new Program(1, 600, 55, "A12"));
+        x.add(new Program(1, 655, 45, "A13"));
+        x.add(new Program(1, 700, 80, "A14"));
+        x.add(new Program(1, 780, 32, "A15"));
+        x.add(new Program(1, 850, 40, "A16"));
+        x.add(new Program(1, 900, 60, "A17"));
+        x.add(new Program(1, 960, 35, "A18"));
+        x.add(new Program(1, 995, 5, "A19"));
+        x.add(new Program(1, 1000, 60, "A20"));
 
+        return x;
+    }
+
+    public static ArrayList<Program> generateSecondDummyPrograms() {
+        ArrayList<Program> x = new ArrayList<>();
 
         x.add(new Program(2, 40, 40, "B1"));//Should be painted in the first step
         x.add(new Program(2, 80, 60, "B2"));
@@ -63,6 +77,16 @@ public class Program {
         x.add(new Program(2, 385, 70, "B7"));
         x.add(new Program(2, 500, 60, "B8"));
         x.add(new Program(2, 600, 60, "B9"));
+        x.add(new Program(2, 660, 60, "B10"));
+        x.add(new Program(2, 720, 70, "B11"));
+        x.add(new Program(2, 790, 10, "B12"));
+        x.add(new Program(2, 800, 90, "B13"));
+
+        return x;
+    }
+
+    public static ArrayList<Program> generateThirdDummyPrograms() {
+        ArrayList<Program> x = new ArrayList<>();
 
         x.add(new Program(3, 25, 200, "C1"));//Should be painted in the first step
         x.add(new Program(3, 225, 40, "C2"));
@@ -74,6 +98,18 @@ public class Program {
         x.add(new Program(3, 415, 20, "C8"));
         x.add(new Program(3, 500, 15, "C9"));
         x.add(new Program(3, 515, 100, "C10"));
+        x.add(new Program(3, 620, 10, "C11"));
+        x.add(new Program(3, 650, 40, "C12"));
+        x.add(new Program(3, 690, 100, "C13"));
+        x.add(new Program(3, 800, 20, "C14"));
+        x.add(new Program(3, 820, 30, "C15"));
+        x.add(new Program(3, 850, 50, "C16"));
+
+        return x;
+    }
+
+    public static ArrayList<Program> generateFourthDummyPrograms() {
+        ArrayList<Program> x = new ArrayList<>();
 
         x.add(new Program(4, 10, 40, "D1"));//Should be painted in the first step
         x.add(new Program(4, 50, 80, "D2"));//Should be painted in the first step
@@ -81,15 +117,52 @@ public class Program {
         x.add(new Program(4, 210, 40, "D4"));
         x.add(new Program(4, 250, 80, "D5"));
         x.add(new Program(4, 330, 20, "D6"));
+        x.add(new Program(4, 350, 60, "D7"));
+        x.add(new Program(4, 410, 40, "D8"));
+        x.add(new Program(4, 450, 80, "D9"));
+        x.add(new Program(4, 530, 20, "D10"));
+        x.add(new Program(4, 550, 60, "D11"));
+        x.add(new Program(4, 610, 100, "D12"));
+        x.add(new Program(4, 710, 80, "D13"));
+        x.add(new Program(4, 790, 20, "D14"));
+        x.add(new Program(4, 850, 60, "D15"));
+        x.add(new Program(4, 910, 10, "D16"));
+        x.add(new Program(4, 920, 20, "D17"));
+        x.add(new Program(4, 940, 30, "D18"));
 
-//        x.add(new Program(5, 10, 40, "E1"));//Should be painted in the first step
-//        x.add(new Program(5, 50, 80, "E2"));//Should be painted in the first step
-//        x.add(new Program(5, 130, 60, "E3"));
-//        x.add(new Program(5, 210, 40, "E4"));
-//        x.add(new Program(5, 250, 80, "E5"));
-//        x.add(new Program(5, 330, 20, "E6"));
+        return x;
+    }
 
+    public static ArrayList<Program> generateFifthDummyPrograms() {
+        ArrayList<Program> x = new ArrayList<>();
 
+        x.add(new Program(5, 10, 40, "E1"));//Should be painted in the first step
+        x.add(new Program(5, 50, 80, "E2"));//Should be painted in the first step
+        x.add(new Program(5, 130, 60, "E3"));
+        x.add(new Program(5, 210, 40, "E4"));
+        x.add(new Program(5, 250, 80, "E5"));
+        x.add(new Program(5, 330, 20, "E6"));
+
+        sortProgram(x);
+
+        return x;
+    }
+
+    public static ArrayList<Program> generateDummyPrograms() {
+        ArrayList<Program> x = new ArrayList<>();
+
+        x.addAll(generateFirstDummyPrograms());
+        x.addAll(generateSecondDummyPrograms());
+        x.addAll(generateThirdDummyPrograms());
+        x.addAll(generateFourthDummyPrograms());
+//        x.addAll(generateFifthDummyPrograms());
+
+        sortProgram(x);
+
+        return x;
+    }
+
+    private static void sortProgram(final ArrayList<Program> x){
         Collections.sort(x, new Comparator<Program>() {
             @Override
             public int compare(Program lhs, Program rhs) {
@@ -103,7 +176,6 @@ public class Program {
         for (int i = 0; i < x.size(); i++) {
             x.get(i).setPositionOrderedByEndTime(i);
         }
-
 
         Collections.sort(x, new Comparator<Program>() {
             @Override
@@ -119,8 +191,6 @@ public class Program {
         for (int i = 0; i < x.size(); i++) {
             x.get(i).setPositionOrderedByStartTime(i);
         }
-
-        return x;
     }
 
     public int generateDummyColor() {

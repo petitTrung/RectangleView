@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -31,20 +32,8 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        final ViewHolder viewHolder = new ViewHolder(new TextView(mContext));
-        viewHolder.mTextView.setMinimumHeight(128);
-//        h.mTextView.setPadding(20, 0, 20, 0);
-        viewHolder.mTextView.setFocusable(true);
-        RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-//        lp.leftMargin = 10;
-//        lp.rightMargin = 5;
-//        lp.topMargin = 20;
-//        lp.bottomMargin = 15;
-        viewHolder.mTextView.setLayoutParams(lp);
-
-        return viewHolder;
+        View v = LayoutInflater.from(mContext).inflate(R.layout.item, viewGroup, false);
+        return new ViewHolder(v);
     }
 
     @Override
@@ -55,11 +44,11 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
                 "\n" + mData.get(position).name +
                 "\n" + mData.get(position).positionOrderedByStartTime +
                 "\n" + mData.get(position).positionOrderedByEndTime);
-        viewHolder.mTextView.setTag(mData.get(position));
-        viewHolder.mTextView.setWidth(mData.get(position).duration);
-        viewHolder.mTextView.setBackgroundColor(mData.get(position).color);
+        viewHolder.mParent.setTag(mData.get(position));
+//        viewHolder.mTextView.setWidth(mData.get(position).duration);
+        viewHolder.mTextView.setTextColor(mData.get(position).color);
 
-        viewHolder.mTextView.setOnClickListener(new View.OnClickListener() {
+        viewHolder.mParent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(mContext, mData.get(position).name, Toast.LENGTH_SHORT).show();
@@ -77,11 +66,13 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public View mParent;
         public TextView mTextView;
 
-        public ViewHolder(TextView v) {
-            super(v);
-            mTextView = v;
+        public ViewHolder(View view) {
+            super(view);
+            mParent = view.findViewById(R.id.parent);
+            mTextView = (TextView) view.findViewById(R.id.text);
         }
 
         @Override

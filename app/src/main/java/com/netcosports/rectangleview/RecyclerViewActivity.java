@@ -15,9 +15,15 @@ public class RecyclerViewActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         SimpleAdapter adapter = new SimpleAdapter(this, Program.generateDummyPrograms());
+        RectangleLayoutManager layoutManager = new RectangleLayoutManager(this, adapter.getData(),
+                Program.generateFirstDummyPrograms(),
+                Program.generateSecondDummyPrograms(),
+                Program.generateThirdDummyPrograms(),
+                Program.generateFourthDummyPrograms(),
+                Program.generateFifthDummyPrograms());
 
         rv = new RecyclerView(this);
-        rv.setLayoutManager(new RectangleLayoutManager(this, adapter.getData()));
+        rv.setLayoutManager(layoutManager);
         rv.setHasFixedSize(true);
         rv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         rv.setAdapter(adapter);

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Created by trung on 30/01/15.
@@ -14,7 +16,7 @@ import java.util.ArrayList;
 public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     private Context mContext;
-    private ArrayList<Program> mData;
+    private ArrayList<Program> mData, mData1, mData2, mData3, mData4, mData5;
 
     /**
      * This element allows us to know if we reach some news Childs View
@@ -40,12 +42,22 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
      */
     private int mNextIndexInverse = 0;
 
-    private int[] top = new int[4];
-    private int[] bottom = new int[4];
+    private int[] top = new int[5];
+    private int[] bottom = new int[5];
 
-    public RectangleLayoutManager(Context context, ArrayList<Program> data) {
+    public RectangleLayoutManager(Context context, ArrayList<Program> data,
+                                  ArrayList<Program> data1,
+                                  ArrayList<Program> data2,
+                                  ArrayList<Program> data3,
+                                  ArrayList<Program> data4,
+                                  ArrayList<Program> data5) {
         mContext = context;
         mData = data;
+        mData1 = data1;
+        mData2 = data2;
+        mData3 = data3;
+        mData4 = data4;
+        mData5 = data5;
     }
 
     @Override
@@ -469,7 +481,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         int first = 0;
         int last = 0;
 
-//        ArrayList<Program> childsOrdered = new ArrayList<>();
+        ArrayList<Program> childsOrdered = new ArrayList<>();
 
         for (int i = 0; i < childCount; i++) {
             final View v = getChildAt(i);
@@ -487,21 +499,21 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     foundFirst = true;
                 }
                 last = i;
-//                childsOrdered.add(program);
+                childsOrdered.add(program);
             }
         }
 
-//        if(childsOrdered.size() > 0) {
-//            Collections.sort(childsOrdered, new Comparator<Program>() {
-//                @Override
-//                public int compare(Program lhs, Program rhs) {
-//                    return (lhs.positionOrderedByStartTime - rhs.positionOrderedByStartTime);
-//                }
-//            });
-//            mNextIndex = childsOrdered.get(childsOrdered.size() - 1).positionOrderedByStartTime + 1;
-//        }
+        if (childsOrdered.size() > 0) {
+            Collections.sort(childsOrdered, new Comparator<Program>() {
+                @Override
+                public int compare(Program lhs, Program rhs) {
+                    return (lhs.positionOrderedByStartTime - rhs.positionOrderedByStartTime);
+                }
+            });
+            mNextIndex = childsOrdered.get(childsOrdered.size() - 1).positionOrderedByStartTime + 1;
+        }
 
-        mNextIndex = ((Program)getChildAt(last).getTag()).positionOrderedByStartTime + 1;
+//        mNextIndex = ((Program)getChildAt(last).getTag()).positionOrderedByStartTime + 1;
 
         /**
          * when right item disappear
@@ -559,7 +571,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         Log.i("dy", "" + dy);
 
         if (dy > 0) {
-            int distance = 4 * height / 3 - verticalScrollingDistance;
+            int distance = 5 * height / 3 - verticalScrollingDistance;
             if (dy < distance) {
                 verticalScrollingDistance += dy;
 
@@ -592,7 +604,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        for (int i = 0 ; i < top.length ; i++) {
+        for (int i = 0; i < top.length; i++) {
             top[i] += scrolled;
             bottom[i] += scrolled;
         }
