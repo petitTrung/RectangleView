@@ -75,12 +75,12 @@ public class Program {
         x.add(new Program(3, 500, 15, "C9"));
         x.add(new Program(3, 515, 100, "C10"));
 
-//        x.add(new Program(4, 10, 40, "D1"));//Should be painted in the first step
-//        x.add(new Program(4, 50, 80, "D2"));//Should be painted in the first step
-//        x.add(new Program(4, 130, 60, "D3"));
-//        x.add(new Program(4, 210, 40, "D4"));
-//        x.add(new Program(4, 250, 80, "D5"));
-//        x.add(new Program(4, 330, 20, "D6"));
+        x.add(new Program(4, 10, 40, "D1"));//Should be painted in the first step
+        x.add(new Program(4, 50, 80, "D2"));//Should be painted in the first step
+        x.add(new Program(4, 130, 60, "D3"));
+        x.add(new Program(4, 210, 40, "D4"));
+        x.add(new Program(4, 250, 80, "D5"));
+        x.add(new Program(4, 330, 20, "D6"));
 
 
         Collections.sort(x, new Comparator<Program>() {

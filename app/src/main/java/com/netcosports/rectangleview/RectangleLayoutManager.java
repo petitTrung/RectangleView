@@ -21,6 +21,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     private ArrayList<Program> mData;
 
     private int screenWidth;
+    private int screenHeight;
 
     /**
      * This element allows us to know if we reach some news Childs View
@@ -39,17 +40,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
      */
     private int mNextIndexInverse = 0;
 
-    private int top1;
-    private int bottom1;
-
-    private int top2;
-    private int bottom2;
-
-    private int top3;
-    private int bottom3;
-
-    private int top4;
-    private int bottom4;
+    private int[] top = new int[4];
+    private int[] bottom = new int[4];
 
     public RectangleLayoutManager(Context context, ArrayList<Program> data) {
         mContext = context;
@@ -59,6 +51,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         screenWidth = displayMetrics.widthPixels;
+        screenHeight = displayMetrics.heightPixels;
     }
 
     @Override
@@ -82,17 +75,10 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         /**
          * Initialize top & bottom of view for a given channel
          */
-        top1 = 0;
-        bottom1 = getHeight() / 3;
-
-        top2 = getHeight() / 3;
-        bottom2 = 2 * getHeight() / 3;
-
-        top3 = 2 * getHeight() / 3;
-        bottom3 = getHeight();
-
-        top4 = getHeight();
-        bottom4 = 4 * getHeight() / 3;
+        for (int i = 0; i < top.length; i++) {
+            top[i] = i * getHeight() / 3;
+            bottom[i] = (i + 1) * getHeight() / 3;
+        }
 
         /**
          *
@@ -441,13 +427,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
             if (program != null) {
                 if (program.channel == 2) {
-                    layoutDecorated(v, program.start_time, top2, program.end_time, bottom2);
+                    layoutDecorated(v, program.start_time, top[1], program.end_time, bottom[1]);
                 } else if (program.channel == 3) {
-                    layoutDecorated(v, program.start_time, top3, program.end_time, bottom3);
+                    layoutDecorated(v, program.start_time, top[2], program.end_time, bottom[2]);
                 } else if (program.channel == 4) {
-                    layoutDecorated(v, program.start_time, top4, program.end_time, bottom4);
+                    layoutDecorated(v, program.start_time, top[3], program.end_time, bottom[3]);
                 } else {
-                    layoutDecorated(v, program.start_time, top1, program.end_time, bottom1);
+                    layoutDecorated(v, program.start_time, top[0], program.end_time, bottom[0]);
                 }
             }
         }
@@ -466,13 +452,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
             if (program != null) {
                 if (program.channel == 2) {
-                    layoutDecorated(v, left, top2, right, bottom2);
+                    layoutDecorated(v, left, top[1], right, bottom[1]);
                 } else if (program.channel == 3) {
-                    layoutDecorated(v, left, top3, right, bottom3);
+                    layoutDecorated(v, left, top[2], right, bottom[2]);
                 } else if (program.channel == 4) {
-                    layoutDecorated(v, left, top4, right, bottom4);
+                    layoutDecorated(v, left, top[3], right, bottom[3]);
                 } else {
-                    layoutDecorated(v, left, top1, right, bottom1);
+                    layoutDecorated(v, left, top[0], right, bottom[0]);
                 }
             }
         }
@@ -492,13 +478,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
             if (program != null) {
                 if (program.channel == 2) {
-                    layoutDecorated(v, left, top2, right, bottom2);
+                    layoutDecorated(v, left, top[1], right, bottom[1]);
                 } else if (program.channel == 3) {
-                    layoutDecorated(v, left, top3, right, bottom3);
+                    layoutDecorated(v, left, top[2], right, bottom[2]);
                 } else if (program.channel == 4) {
-                    layoutDecorated(v, left, top4, right, bottom4);
+                    layoutDecorated(v, left, top[3], right, bottom[3]);
                 } else {
-                    layoutDecorated(v, left, top1, right, bottom1);
+                    layoutDecorated(v, left, top[0], right, bottom[0]);
                 }
             }
         }
@@ -535,14 +521,17 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        Collections.sort(childsOrdered, new Comparator<Program>() {
-            @Override
-            public int compare(Program lhs, Program rhs) {
-                return (lhs.positionOrderedByStartTime - rhs.positionOrderedByStartTime);
-            }
-        });
-        mNextIndex = childsOrdered.get(childsOrdered.size() - 1).positionOrderedByStartTime + 1;
-//        mNextIndex = ((Program)getChildAt(last).getTag()).positionOrderedByStartTime + 1;
+//        if(childsOrdered.size() > 0) {
+//            Collections.sort(childsOrdered, new Comparator<Program>() {
+//                @Override
+//                public int compare(Program lhs, Program rhs) {
+//                    return (lhs.positionOrderedByStartTime - rhs.positionOrderedByStartTime);
+//                }
+//            });
+//            mNextIndex = childsOrdered.get(childsOrdered.size() - 1).positionOrderedByStartTime + 1;
+//        }
+
+        mNextIndex = ((Program)getChildAt(last).getTag()).positionOrderedByStartTime + 1;
 
         /**
          * when right item disappear
@@ -593,43 +582,57 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         /**
          * Must modify values top[i] & bottom[i]
          */
-        int scrolled;
+        int scrolled = 0;
 
-//        Log.i("dy", "" + dy);
-//
-//        if (dy > 0) {
-//            int distance = 4 * getHeight() / 3 - verticalScrollingDistance;
-//            if (dy < distance) {
-//                verticalScrollingDistance += dy;
-//
-//                offsetChildrenVertical(-dy);
-//
-//                scrolled = -dy;
-//            } else {
-//                verticalScrollingDistance += distance;
-//
-//                offsetChildrenVertical(-distance);
-//
-//                scrolled = -distance;
-//            }
-//        } else {
-//            int distance = verticalScrollingDistance - 4 * getHeight() / 3;
-//            if (dy > distance) {
-//                verticalScrollingDistance += dy;
-//
-//                offsetChildrenVertical(-dy);
-//
-//                scrolled = -dy;
-//            } else {
-//                verticalScrollingDistance += distance;
-//
-//                offsetChildrenVertical(-distance);
-//
-//                scrolled = -distance;
-//            }
-//        }
-//
-//        return -scrolled;
-        return dy;
+        Log.w("dy", "" + dy);
+
+        Log.i("dy", "" + dy);
+
+        if (dy > 0) {
+            int distance = 4 * getHeight() / 3 - verticalScrollingDistance;
+            if (dy < distance) {
+                verticalScrollingDistance += dy;
+
+                offsetChildrenVertical(-dy);
+
+                scrolled = -dy;
+            } else {
+                verticalScrollingDistance += distance;
+
+                offsetChildrenVertical(-distance);
+
+                scrolled = -distance;
+            }
+
+        } else {
+            int distance = getHeight() - verticalScrollingDistance;
+
+            if (dy > distance) {
+                verticalScrollingDistance += dy;
+
+                offsetChildrenVertical(-dy);
+
+                scrolled = -dy;
+            } else {
+                verticalScrollingDistance += distance;
+
+                offsetChildrenVertical(-distance);
+
+                scrolled = -distance;
+            }
+        }
+
+        for (int i = 0 ; i < top.length ; i++) {
+            top[i] += scrolled;
+            bottom[i] += scrolled;
+        }
+
+        /**
+         * put All Useless Views to Recycle-Pool
+         */
+        recycleViewsOutOfBounds(recycler);
+
+        return -scrolled;
+//        return dy;
     }
 }
