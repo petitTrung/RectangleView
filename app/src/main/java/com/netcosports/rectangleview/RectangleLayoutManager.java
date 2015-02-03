@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Created by trung on 30/01/15.
@@ -510,9 +512,21 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         boolean foundFirst = false;
         int first = 0;
         int last = 0;
+
+        ArrayList<Program> childsOrdered = new ArrayList<>();
+
         for (int i = 0; i < childCount; i++) {
             final View v = getChildAt(i);
-            if (getDecoratedRight(v) >= 0 &&
+
+            Program program = (Program) v.getTag();
+
+            Log.i("i", "" + i);
+            Log.i("pro", program.name);
+            Log.i("getDecoratedRight(v)", "" + getDecoratedRight(v));
+
+            if (getDecoratedRight(v) < 0) {
+                mNextIndexInverse = program.positionOrderedByEndTime;
+            } else if (getDecoratedRight(v) >= 0 &&
                     getDecoratedLeft(v) <= parentWidth &&
                     getDecoratedBottom(v) >= 0 &&
                     getDecoratedTop(v) <= parentHeight) {
@@ -521,8 +535,18 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     foundFirst = true;
                 }
                 last = i;
+                childsOrdered.add(program);
             }
         }
+
+        Collections.sort(childsOrdered, new Comparator<Program>() {
+            @Override
+            public int compare(Program lhs, Program rhs) {
+                return (lhs.positionOrderedByStartTime - rhs.positionOrderedByStartTime);
+            }
+        });
+        mNextIndex = childsOrdered.get(childsOrdered.size() - 1).positionOrderedByStartTime + 1;
+//        mNextIndex = ((Program)getChildAt(last).getTag()).positionOrderedByStartTime + 1;
 
         /**
          * when right item disappear
@@ -540,20 +564,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
         Log.i("first", "" + first);
         Log.i("last", "" + last);
-
-        int x = 0;
-        for (int i = 0; i < getChildCount(); i++) {
-            final View v = getChildAt(i);
-            Program program = (Program) v.getTag();
-
-            if (program.positionOrderedByEndTime > x) {
-                x = program.positionOrderedByEndTime;
-            }
-        }
-
-        mNextIndexInverse = x + 1;
-
-        mNextIndex = ((Program) getChildAt(getChildCount() - 1).getTag()).positionOrderedByStartTime + 1;
 
         Log.i("mNextIndexInverse", "" + mNextIndexInverse);
         Log.i("mNextIndex", "" + mNextIndex);
