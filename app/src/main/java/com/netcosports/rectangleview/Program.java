@@ -82,6 +82,13 @@ public class Program {
         x.add(new Program(4, 250, 80, "D5"));
         x.add(new Program(4, 330, 20, "D6"));
 
+//        x.add(new Program(5, 10, 40, "E1"));//Should be painted in the first step
+//        x.add(new Program(5, 50, 80, "E2"));//Should be painted in the first step
+//        x.add(new Program(5, 130, 60, "E3"));
+//        x.add(new Program(5, 210, 40, "E4"));
+//        x.add(new Program(5, 250, 80, "E5"));
+//        x.add(new Program(5, 330, 20, "E6"));
+
 
         Collections.sort(x, new Comparator<Program>() {
             @Override

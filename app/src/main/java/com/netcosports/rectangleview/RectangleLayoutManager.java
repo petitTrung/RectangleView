@@ -2,15 +2,11 @@ package com.netcosports.rectangleview;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * Created by trung on 30/01/15.
@@ -20,15 +16,19 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     private Context mContext;
     private ArrayList<Program> mData;
 
-    private int screenWidth;
-    private int screenHeight;
-
     /**
      * This element allows us to know if we reach some news Childs View
      */
     private int horizontalScrollingDistance = 0;
-
     private int verticalScrollingDistance = 0;
+
+    private int width;
+    private int height;
+
+    /**
+     * Number of items
+     */
+    private int mCount;
 
     /**
      * First Next Invisible position when scrolling from right to left (in the Recycle-Pool)
@@ -46,12 +46,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     public RectangleLayoutManager(Context context, ArrayList<Program> data) {
         mContext = context;
         mData = data;
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        wm.getDefaultDisplay().getMetrics(displayMetrics);
-        screenWidth = displayMetrics.widthPixels;
-        screenHeight = displayMetrics.heightPixels;
     }
 
     @Override
@@ -72,12 +66,15 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
 
+        width = getWidth();
+        height = getHeight();
+
         /**
          * Initialize top & bottom of view for a given channel
          */
         for (int i = 0; i < top.length; i++) {
-            top[i] = i * getHeight() / 3;
-            bottom[i] = (i + 1) * getHeight() / 3;
+            top[i] = i * height / 3;
+            bottom[i] = (i + 1) * height / 3;
         }
 
         /**
@@ -122,7 +119,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
          * has to fill. We start filling
          *
          */
-        final int count = state.getItemCount();
+        mCount = mData.size();
 
 
         /**
@@ -136,7 +133,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
          */
         int i = 0;
         boolean needFill = true;
-        while (i < count && needFill) {
+        while (i < mCount && needFill) {
 
             /**
              * Retrieving from the Recycler-Pool or Creating a new fresh View for the position (mFirstPosition + i)
@@ -175,13 +172,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             /**
              * Verify "screenWidth"
              */
-            if (i < count && mData.get(i).start_time < screenWidth) {
+            if (i < mCount && mData.get(i).start_time < width) {
                 needFill = true;
             } else {
                 needFill = false;
 
-                horizontalScrollingDistance = screenWidth;
-                verticalScrollingDistance = getHeight();
+                horizontalScrollingDistance = width;
+                verticalScrollingDistance = height;
 
                 mNextIndex = i;
                 mNextIndexInverse = getItemCount();
@@ -223,7 +220,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
      */
     @Override
     public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        if (getChildCount() == 0) {
+        if (mCount == 0) {
             return 0;
         }
 
@@ -254,8 +251,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
              *
              */
 
-            if (mNextIndexInverse == getItemCount()) {
-                int distanceAfterLast = mData.get(0).start_time - horizontalScrollingDistance + screenWidth;
+            if (mNextIndexInverse == mCount) {
+                int distanceAfterLast = mData.get(0).start_time - horizontalScrollingDistance + width;
 
                 if (dx > distanceAfterLast) {
 
@@ -271,8 +268,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                     scrolled = -distanceAfterLast;
                 }
-            } else if (mNextIndexInverse < getItemCount()) {
-                int distanceAfterLast = getProgramByIndexInverse().end_time - horizontalScrollingDistance + screenWidth;
+            } else if (mNextIndexInverse < mCount) {
+                int distanceAfterLast = getProgramByIndexInverse().end_time - horizontalScrollingDistance + width;
 
                 /**
                  * in this case all views will be scrolled by dx because there is no view which will be added
@@ -294,8 +291,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     /**
                      * Initialize all possible childs
                      */
-                    while (mNextIndexInverse < getItemCount() &&
-                            getProgramByIndexInverse().end_time - horizontalScrollingDistance + screenWidth >= dx) {
+                    while (mNextIndexInverse < mCount &&
+                            getProgramByIndexInverse().end_time - horizontalScrollingDistance + width >= dx) {
 
                         View leftView = recycler.getViewForPosition(getProgramByIndexInverse().positionOrderedByStartTime);
 
@@ -341,7 +338,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
              *
              */
 
-            if (mNextIndex == getItemCount()) {
+            if (mNextIndex == mCount) {
                 int distanceBeforeNext = mData.get(mNextIndex - 1).end_time - horizontalScrollingDistance;
 
                 if (distanceBeforeNext > dx) {
@@ -357,7 +354,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     scrolled = -distanceBeforeNext;
                 }
 
-            } else if (mNextIndex < getItemCount()) {
+            } else if (mNextIndex < mCount) {
                 int distanceBeforeNext = mData.get(mNextIndex).start_time - horizontalScrollingDistance;
 
                 /**
@@ -379,7 +376,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     /**
                      * Initialize all possible childs
                      */
-                    while (mNextIndex < getItemCount() && mData.get(mNextIndex).start_time <= dx + horizontalScrollingDistance) {
+                    while (mNextIndex < mCount && mData.get(mNextIndex).start_time <= dx + horizontalScrollingDistance) {
                         View rightView = recycler.getViewForPosition(mNextIndex);
 
                         addView(rightView);
@@ -426,80 +423,53 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             Log.i("ADD PROGRAM", program.name);
 
             if (program != null) {
-                if (program.channel == 2) {
-                    layoutDecorated(v, program.start_time, top[1], program.end_time, bottom[1]);
-                } else if (program.channel == 3) {
-                    layoutDecorated(v, program.start_time, top[2], program.end_time, bottom[2]);
-                } else if (program.channel == 4) {
-                    layoutDecorated(v, program.start_time, top[3], program.end_time, bottom[3]);
-                } else {
-                    layoutDecorated(v, program.start_time, top[0], program.end_time, bottom[0]);
-                }
+                layoutDecorated(v, program.start_time, top[program.channel - 1], program.end_time, bottom[program.channel - 1]);
             }
         }
     }
 
     private void onLayoutRightView(final View v) {
-        if (mNextIndex < mData.size()) {
+        if (mNextIndex < mCount) {
             Program program = mData.get(mNextIndex);
             Log.i("add program", program.name);
 
-            int left = (program.start_time - horizontalScrollingDistance) + screenWidth;
+            int left = (program.start_time - horizontalScrollingDistance) + width;
             int right = left + program.duration;
 
             Log.i("left", "" + left);
             Log.i("right", "" + right);
 
             if (program != null) {
-                if (program.channel == 2) {
-                    layoutDecorated(v, left, top[1], right, bottom[1]);
-                } else if (program.channel == 3) {
-                    layoutDecorated(v, left, top[2], right, bottom[2]);
-                } else if (program.channel == 4) {
-                    layoutDecorated(v, left, top[3], right, bottom[3]);
-                } else {
-                    layoutDecorated(v, left, top[0], right, bottom[0]);
-                }
+                layoutDecorated(v, left, top[program.channel - 1], right, bottom[program.channel - 1]);
             }
         }
     }
 
     private void onLayoutLeftView(final View v) {
-        if (mNextIndexInverse < mData.size()) {
+        if (mNextIndexInverse < mCount) {
             Program program = getProgramByIndexInverse();
 
             Log.i("add program", program.name);
 
-            int right = program.end_time - horizontalScrollingDistance + screenWidth;
+            int right = program.end_time - horizontalScrollingDistance + width;
             int left = right - program.duration;
 
             Log.i("left", "" + left);
             Log.i("right", "" + right);
 
             if (program != null) {
-                if (program.channel == 2) {
-                    layoutDecorated(v, left, top[1], right, bottom[1]);
-                } else if (program.channel == 3) {
-                    layoutDecorated(v, left, top[2], right, bottom[2]);
-                } else if (program.channel == 4) {
-                    layoutDecorated(v, left, top[3], right, bottom[3]);
-                } else {
-                    layoutDecorated(v, left, top[0], right, bottom[0]);
-                }
+                layoutDecorated(v, left, top[program.channel - 1], right, bottom[program.channel - 1]);
             }
         }
     }
 
     public void recycleViewsOutOfBounds(RecyclerView.Recycler recycler) {
         final int childCount = getChildCount();
-
-        final int parentWidth = getWidth();
-        final int parentHeight = getHeight();
         boolean foundFirst = false;
         int first = 0;
         int last = 0;
 
-        ArrayList<Program> childsOrdered = new ArrayList<>();
+//        ArrayList<Program> childsOrdered = new ArrayList<>();
 
         for (int i = 0; i < childCount; i++) {
             final View v = getChildAt(i);
@@ -509,15 +479,15 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             if (getDecoratedRight(v) < 0) {
                 mNextIndexInverse = program.positionOrderedByEndTime;
             } else if (getDecoratedRight(v) >= 0 &&
-                    getDecoratedLeft(v) <= parentWidth &&
+                    getDecoratedLeft(v) <= width &&
                     getDecoratedBottom(v) >= 0 &&
-                    getDecoratedTop(v) <= parentHeight) {
+                    getDecoratedTop(v) <= height) {
                 if (!foundFirst) {
                     first = i;
                     foundFirst = true;
                 }
                 last = i;
-                childsOrdered.add(program);
+//                childsOrdered.add(program);
             }
         }
 
@@ -582,14 +552,14 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         /**
          * Must modify values top[i] & bottom[i]
          */
-        int scrolled = 0;
+        int scrolled;
 
         Log.w("dy", "" + dy);
 
         Log.i("dy", "" + dy);
 
         if (dy > 0) {
-            int distance = 4 * getHeight() / 3 - verticalScrollingDistance;
+            int distance = 4 * height / 3 - verticalScrollingDistance;
             if (dy < distance) {
                 verticalScrollingDistance += dy;
 
@@ -605,7 +575,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             }
 
         } else {
-            int distance = getHeight() - verticalScrollingDistance;
+            int distance = height - verticalScrollingDistance;
 
             if (dy > distance) {
                 verticalScrollingDistance += dy;
@@ -630,7 +600,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         /**
          * put All Useless Views to Recycle-Pool
          */
-        recycleViewsOutOfBounds(recycler);
+        //recycleViewsOutOfBounds(recycler);
 
         return -scrolled;
 //        return dy;
