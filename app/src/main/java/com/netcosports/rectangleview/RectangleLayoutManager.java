@@ -520,10 +520,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
             Program program = (Program) v.getTag();
 
-            Log.i("i", "" + i);
-            Log.i("pro", program.name);
-            Log.i("getDecoratedRight(v)", "" + getDecoratedRight(v));
-
             if (getDecoratedRight(v) < 0) {
                 mNextIndexInverse = program.positionOrderedByEndTime;
             } else if (getDecoratedRight(v) >= 0 &&
@@ -597,7 +593,9 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         /**
          * Must modify values top[i] & bottom[i]
          */
-//        int scrolled;
+        int scrolled;
+
+//        Log.i("dy", "" + dy);
 //
 //        if (dy > 0) {
 //            int distance = 4 * getHeight() / 3 - verticalScrollingDistance;
@@ -607,16 +605,14 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 //                offsetChildrenVertical(-dy);
 //
 //                scrolled = -dy;
-//            }
-//            else {
+//            } else {
 //                verticalScrollingDistance += distance;
 //
 //                offsetChildrenVertical(-distance);
 //
 //                scrolled = -distance;
 //            }
-//        }
-//        else {
+//        } else {
 //            int distance = verticalScrollingDistance - 4 * getHeight() / 3;
 //            if (dy > distance) {
 //                verticalScrollingDistance += dy;
@@ -624,8 +620,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 //                offsetChildrenVertical(-dy);
 //
 //                scrolled = -dy;
-//            }
-//            else {
+//            } else {
 //                verticalScrollingDistance += distance;
 //
 //                offsetChildrenVertical(-distance);

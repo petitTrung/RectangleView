@@ -57,7 +57,7 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
                 "\n" + mData.get(position).positionOrderedByEndTime);
         viewHolder.mTextView.setTag(mData.get(position));
         viewHolder.mTextView.setWidth(mData.get(position).duration);
-        viewHolder.mTextView.setBackgroundColor(generateDummyColor());
+        viewHolder.mTextView.setBackgroundColor(mData.get(position).color);
 
         viewHolder.mTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,12 +73,6 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
             return mData.size();
         }
         return 0;
-    }
-
-
-    public int generateDummyColor() {
-        Random rnd = new Random();
-        return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
     }
 
 

@@ -1,8 +1,11 @@
 package com.netcosports.rectangleview;
 
+import android.graphics.Color;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 
 /**
  * Created by trung on 30/01/15.
@@ -15,12 +18,16 @@ public class Program {
     public int duration;
     public String name;
 
+    public int color;
+
     public Program(int channel, int start_time, int duration, String name) {
         this.channel = channel;
         this.start_time = start_time * 10;
         this.duration = duration * 10;
         this.end_time = this.start_time + this.duration;
         this.name = name;
+
+        this.color = generateDummyColor();
     }
 
     public void setPositionOrderedByStartTime(int position) {
@@ -106,17 +113,11 @@ public class Program {
             x.get(i).setPositionOrderedByStartTime(i);
         }
 
-//        Collections.sort(x, new Comparator<Program>() {
-//            @Override
-//            public int compare(Program lhs, Program rhs) {
-//                if (rhs.end_time - lhs.end_time != 0) {
-//                    return (rhs.end_time - lhs.end_time);
-//                }
-//
-//                return (rhs.start_time - lhs.start_time);
-//            }
-//        });
-
         return x;
+    }
+
+    public int generateDummyColor() {
+        Random rnd = new Random();
+        return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
     }
 }
