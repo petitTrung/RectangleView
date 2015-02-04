@@ -19,15 +19,19 @@ import java.util.Random;
 public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder> {
 
     private ArrayList<Program> mData;
+    private ArrayList<Channel> mChannels;
     private Context mContext;
 
-    public SimpleAdapter(Context context, ArrayList<Program> data) {
-        mData = data;
+    public SimpleAdapter(Context context, ArrayList<Channel> channels) {
+        mChannels = channels;
         mContext = context;
-    }
 
-    public ArrayList<Program> getData() {
-        return mData;
+        mData = new ArrayList<>();
+
+        for (Channel channel : channels) {
+            mData.addAll(channel.mPrograms);
+        }
+        Program.sortProgram(mData);
     }
 
     @Override
@@ -45,7 +49,6 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
                 "\n" + mData.get(position).positionOrderedByStartTime +
                 "\n" + mData.get(position).positionOrderedByEndTime);
         viewHolder.mParent.setTag(mData.get(position));
-//        viewHolder.mTextView.setWidth(mData.get(position).duration);
         viewHolder.mTextView.setTextColor(mData.get(position).color);
 
         viewHolder.mParent.setOnClickListener(new View.OnClickListener() {

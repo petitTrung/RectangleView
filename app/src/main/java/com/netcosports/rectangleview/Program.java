@@ -148,21 +148,7 @@ public class Program {
         return x;
     }
 
-    public static ArrayList<Program> generateDummyPrograms() {
-        ArrayList<Program> x = new ArrayList<>();
-
-        x.addAll(generateFirstDummyPrograms());
-        x.addAll(generateSecondDummyPrograms());
-        x.addAll(generateThirdDummyPrograms());
-        x.addAll(generateFourthDummyPrograms());
-//        x.addAll(generateFifthDummyPrograms());
-
-        sortProgram(x);
-
-        return x;
-    }
-
-    private static void sortProgram(final ArrayList<Program> x){
+    public static void sortProgram(final ArrayList<Program> x){
         Collections.sort(x, new Comparator<Program>() {
             @Override
             public int compare(Program lhs, Program rhs) {
