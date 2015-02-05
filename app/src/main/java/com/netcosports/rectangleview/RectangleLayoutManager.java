@@ -1,14 +1,10 @@
 package com.netcosports.rectangleview;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * Created by trung on 30/01/15.
@@ -206,13 +202,10 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                 mNextIndex = i;
                 mNextIndexInverse = getItemCount();
-
-                Log.i("inital mNextIndex ", "" + mNextIndex);
-                Log.i("inital mNextIndexInverse ", "" + mNextIndexInverse);
             }
         }
-    }
 
+    }
 
     /**
      * HORIZONTAL CONFIG
@@ -249,8 +242,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             return 0;
         }
 
-        Log.w("dx", "" + dx);
-        int scrolled = 0;
+        int scrolledX = 0;
 
         if (dx < 0) {
 
@@ -286,13 +278,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                     offsetChildrenHorizontal(-dx);
 
-                    scrolled = -dx;
+                    scrolledX = -dx;
                 } else {
                     horizontalScrollingDistance += distanceAfterLast;
 
                     offsetChildrenHorizontal(-distanceAfterLast);
 
-                    scrolled = -distanceAfterLast;
+                    scrolledX = -distanceAfterLast;
                 }
             } else if (mNextIndexInverse < mCount) {
                 int distanceAfterLast = getProgramByIndexInverse().end_time - horizontalScrollingDistance + width;
@@ -326,7 +318,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                         measureChildWithMargins(leftView, 0, 0);
 
-                        Log.i("add view at index", "" + getProgramByIndexInverse().positionOrderedByStartTime);
+                        //Log.i("add view at index", "" + getProgramByIndexInverse().positionOrderedByStartTime);
 
                         onLayoutLeftView(leftView);
 
@@ -337,7 +329,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     offsetChildrenHorizontal(-dx);
                 }
 
-                scrolled = -dx;
+                scrolledX = -dx;
             }
         } else if (dx > 0) {
 
@@ -372,12 +364,12 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                     offsetChildrenHorizontal(-dx);
 
-                    scrolled = -dx;
+                    scrolledX = -dx;
                 } else {
                     horizontalScrollingDistance += distanceBeforeNext;
                     offsetChildrenHorizontal(-distanceBeforeNext);
 
-                    scrolled = -distanceBeforeNext;
+                    scrolledX = -distanceBeforeNext;
                 }
 
             } else if (mNextIndex < mCount) {
@@ -409,7 +401,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                         measureChildWithMargins(rightView, 0, 0);
 
-                        Log.i("add view at index", "" + mNextIndex);
+                        //Log.i("add view at index", "" + mNextIndex);
 
                         onLayoutRightView(rightView);
 
@@ -420,10 +412,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                     offsetChildrenHorizontal(-dx);
                 }
 
-                scrolled = -dx;
+                scrolledX = -dx;
             }
-
-            Log.i("TAG", "**********************");
         }
 
         /**
@@ -431,7 +421,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
          */
         recycleViewsOutOfBounds(recycler);
 
-        return -scrolled;
+        return -scrolledX;
     }
 
     private Program getProgramByIndexInverse() {
@@ -446,7 +436,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     private void onInitialLayout(final View v) {
         if (v.getTag() != null) {
             Program program = (Program) v.getTag();
-            Log.i("ADD PROGRAM", program.name);
 
             if (program != null) {
                 layoutDecorated(v, program.start_time, top[program.channel - 1], program.end_time, bottom[program.channel - 1]);
@@ -457,13 +446,9 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     private void onLayoutRightView(final View v) {
         if (mNextIndex < mCount) {
             Program program = mPrograms.get(mNextIndex);
-            Log.i("add program", program.name);
 
             int left = (program.start_time - horizontalScrollingDistance) + width;
             int right = left + program.duration;
-
-            Log.i("left", "" + left);
-            Log.i("right", "" + right);
 
             if (program != null) {
                 layoutDecorated(v, left, top[program.channel - 1], right, bottom[program.channel - 1]);
@@ -475,13 +460,8 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         if (mNextIndexInverse < mCount) {
             Program program = getProgramByIndexInverse();
 
-            Log.i("add program", program.name);
-
             int right = program.end_time - horizontalScrollingDistance + width;
             int left = right - program.duration;
-
-            Log.i("left", "" + left);
-            Log.i("right", "" + right);
 
             if (program != null) {
                 layoutDecorated(v, left, top[program.channel - 1], right, bottom[program.channel - 1]);
@@ -559,12 +539,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         for (int i = first - 1; i >= 0; i--) {
             removeAndRecycleViewAt(i, recycler);
         }
-
-        Log.i("first", "" + first);
-        Log.i("last", "" + last);
-
-        Log.i("mNextIndexInverse", "" + mNextIndexInverse);
-        Log.i("mNextIndex", "" + mNextIndex);
     }
 
 
@@ -573,6 +547,11 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
      */
     @Override
     public boolean canScrollVertically() {
+
+//        if (mdy < 0 && verticalScrollingDistance == height) {
+//            return false;
+//        }
+
         return true;
     }
 
@@ -589,17 +568,21 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
      * @param state
      * @return
      */
+
+    private int mdy;
+
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-
         /**
          * Must modify values top[i] & bottom[i]
          */
-        int scrolled;
+        int scrolledY;
 
-        Log.w("dy", "" + dy);
+        mdy = dy;
 
-        Log.i("dy", "" + dy);
+        if (verticalScrollingDistance == height && dy < 0) {
+            return 0;
+        }
 
         if (dy > 0) {
             int distance = mChannels.size() * height / 3 - verticalScrollingDistance;
@@ -608,13 +591,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                 offsetChildrenVertical(-dy);
 
-                scrolled = -dy;
+                scrolledY = -dy;
             } else {
                 verticalScrollingDistance += distance;
 
                 offsetChildrenVertical(-distance);
 
-                scrolled = -distance;
+                scrolledY = -distance;
             }
 
         } else {
@@ -625,19 +608,19 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
                 offsetChildrenVertical(-dy);
 
-                scrolled = -dy;
+                scrolledY = -dy;
             } else {
                 verticalScrollingDistance += distance;
 
                 offsetChildrenVertical(-distance);
 
-                scrolled = -distance;
+                scrolledY = -distance;
             }
         }
 
         for (int i = 0; i < top.length; i++) {
-            top[i] += scrolled;
-            bottom[i] += scrolled;
+            top[i] += scrolledY;
+            bottom[i] += scrolledY;
         }
 
         /**
@@ -645,7 +628,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
          */
         //recycleViewsOutOfBounds(recycler);
 
-        return -scrolled;
+        return -scrolledY;
 //        return dy;
     }
 }

@@ -2,8 +2,6 @@ package com.netcosports.rectangleview;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
@@ -30,11 +28,19 @@ public class RecyclerViewActivity extends ActionBarActivity {
         rv = new RecyclerView(this);
         rv.setLayoutManager(layoutManager);
         rv.setHasFixedSize(true);
-        rv.setClipToPadding(false);
         rv.setItemAnimator(new DefaultItemAnimator());
         rv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         rv.setAdapter(adapter);
         setContentView(rv);
+        rv.requestFocus();
+
+        rv.post(new Runnable() {
+            @Override
+            public void run() {
+                rv.offsetChildrenHorizontal(-1000);
+            }
+        });
+
 
     }
 }
