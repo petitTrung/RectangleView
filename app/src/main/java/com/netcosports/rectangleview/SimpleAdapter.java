@@ -28,6 +28,7 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
             mData.addAll(channel.mPrograms);
         }
         Program.sortProgram(mData);
+
     }
 
     @Override

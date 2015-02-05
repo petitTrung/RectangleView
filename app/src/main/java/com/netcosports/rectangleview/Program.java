@@ -142,6 +142,33 @@ public class Program {
         x.add(new Program(5, 210, 40, "E4"));
         x.add(new Program(5, 250, 80, "E5"));
         x.add(new Program(5, 330, 20, "E6"));
+        x.add(new Program(5, 350, 60, "E7"));
+        x.add(new Program(5, 410, 40, "E8"));
+        x.add(new Program(5, 450, 80, "E9"));
+        x.add(new Program(5, 530, 20, "E10"));
+        x.add(new Program(5, 550, 60, "E11"));
+        x.add(new Program(5, 610, 100, "E12"));
+        x.add(new Program(5, 710, 80, "E13"));
+        x.add(new Program(5, 790, 20, "E14"));
+        x.add(new Program(5, 850, 60, "E15"));
+        x.add(new Program(5, 910, 10, "E16"));
+        x.add(new Program(5, 920, 20, "E17"));
+        x.add(new Program(5, 940, 30, "E18"));
+
+        sortProgram(x);
+
+        return x;
+    }
+
+    public static ArrayList<Program> generateSixthDummyPrograms() {
+        ArrayList<Program> x = new ArrayList<>();
+
+        x.add(new Program(6, 10, 40, "F1"));//Should be painted in the first step
+        x.add(new Program(6, 50, 80, "F2"));//Should be painted in the first step
+        x.add(new Program(6, 130, 60, "F3"));
+        x.add(new Program(6, 210, 40, "F4"));
+        x.add(new Program(6, 250, 80, "F5"));
+        x.add(new Program(6, 330, 20, "F6"));
 
         sortProgram(x);
 
