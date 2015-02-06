@@ -12,16 +12,18 @@ import java.util.ArrayList;
 import it.sephiroth.android.library.widget.HListView;
 
 
-public class RecyclerViewActivity extends ActionBarActivity implements RecyclerView.OnScrollListener, View.OnTouchListener {
+public class RecyclerViewActivity extends ActionBarActivity implements RecyclerView.OnScrollListener, HorizontalScrollingDistanceCalculator.HorizontalScrollDistanceListener, VerticalScrollingDistanceCalculator.VerticalScrollDistanceListener {
 
     private RecyclerView mRecyclerView;
     private RectangleLayoutManager mLayoutManager;
 
     private ListView mVListView;
     private VerticalListAdapter mVerticalListAdapter;
+    private VerticalScrollingDistanceCalculator mVerticalScrollingDistanceCalculator;
 
     private HListView mHListView;
     private HorizontalListAdapter mHorizontalListAdapter;
+    private HorizontalScrollingDistanceCalculator mHorizontalScrollingDistanceCalculator;
 
     private ArrayList<Channel> mChannels;
 
@@ -57,7 +59,16 @@ public class RecyclerViewActivity extends ActionBarActivity implements RecyclerV
 
         mHorizontalListAdapter = new HorizontalListAdapter(this, mData);
         mHListView.setAdapter(mHorizontalListAdapter);
-        mHListView.setOnTouchListener(this);
+//        mHorizontalScrollingDistanceCalculator = new HorizontalScrollingDistanceCalculator();
+//        mHorizontalScrollingDistanceCalculator.setHorizontalScrollDistanceListener(this);
+//        mHListView.setOnScrollListener(mHorizontalScrollingDistanceCalculator);
+        mHListView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                mRecyclerView.dispatchTouchEvent(event);
+                return false;
+            }
+        });
 
         mVListView = (ListView) findViewById(R.id.vListView);
         ArrayList<Integer> mData1 = new ArrayList<>();
@@ -67,8 +78,9 @@ public class RecyclerViewActivity extends ActionBarActivity implements RecyclerV
         }
         mVerticalListAdapter = new VerticalListAdapter(this, mData1);
         mVListView.setAdapter(mVerticalListAdapter);
-        mVListView.setOnTouchListener(this);
-
+        mVerticalScrollingDistanceCalculator = new VerticalScrollingDistanceCalculator();
+        mVerticalScrollingDistanceCalculator.setVerticalScrollDistanceListener(this);
+        mVListView.setOnScrollListener(mVerticalScrollingDistanceCalculator);
 
         mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -80,6 +92,8 @@ public class RecyclerViewActivity extends ActionBarActivity implements RecyclerV
 
                 mVerticalListAdapter.setItemHeight(mRecyclerView.getHeight()/3);
                 //Now you can get the width and height from content
+
+                mRecyclerView.scrollBy(800, 0);
             }
         });
 
@@ -154,12 +168,13 @@ public class RecyclerViewActivity extends ActionBarActivity implements RecyclerV
         return position;
     }
 
+    @Override
+    public void onHorizontalScrollDistanceChanged(int delta, int total) {
+        mRecyclerView.scrollBy(-delta, 0);
+    }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
-
-        mRecyclerView.dispatchTouchEvent(event);
-
-        return false;
+    public void onVerticalScrollDistanceChanged(int delta, int total) {
+        mRecyclerView.scrollBy(0, -delta);
     }
 }
