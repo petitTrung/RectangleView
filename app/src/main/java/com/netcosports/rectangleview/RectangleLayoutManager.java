@@ -208,6 +208,10 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     }
 
+    public int getItemHeight() {
+        return height/3;
+    }
+
     /**
      * HORIZONTAL CONFIG
      */
@@ -566,10 +570,10 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     /**
      * We distinct two cases :
-     * <p/>
+     *
      * dy < 0 : RecyclerView is pulling down or flinging down (pull or fling from top to bottom) : all views are scrolling up (ex : index 50 -> 40)
      * dy > 0 : RecyclerView is pulling up or flinging up (pull or fling from bottom to top) : all views are scrolling down (ex : index 40 -> 50)
-     * <p/>
+     *
      * Pay attention : when we pull or fling the view (even if there is no possible additional view : dy take a value # 0)
      *
      * @param dy

@@ -17,6 +17,7 @@ public class VerticalListAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<Integer> mData;
     private LayoutInflater mInflater;
+    private int itemHeight;
 
 
     public VerticalListAdapter(Context context, ArrayList<Integer> list) {
@@ -49,8 +50,13 @@ public class VerticalListAdapter extends BaseAdapter {
 
         TextView textView = (TextView) convertView.findViewById(R.id.text);
         textView.setText(String.valueOf(position));
-        textView.setHeight(mData.get(position));
+        textView.setHeight(itemHeight);
 
         return convertView;
+    }
+
+    public void setItemHeight(int itemHeight) {
+        this.itemHeight = itemHeight;
+        notifyDataSetChanged();
     }
 }

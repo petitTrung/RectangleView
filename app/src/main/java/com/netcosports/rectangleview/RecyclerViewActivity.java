@@ -2,18 +2,17 @@ package com.netcosports.rectangleview;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AbsListView;
+import android.view.ViewTreeObserver;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-import it.sephiroth.android.library.widget.AbsHListView;
 import it.sephiroth.android.library.widget.HListView;
 
 
-public class RecyclerViewActivity extends ActionBarActivity implements AbsHListView.OnScrollListener, RecyclerView.OnScrollListener, AbsListView.OnScrollListener {
+public class RecyclerViewActivity extends ActionBarActivity implements RecyclerView.OnScrollListener, View.OnTouchListener {
 
     private RecyclerView mRecyclerView;
     private RectangleLayoutManager mLayoutManager;
@@ -52,32 +51,37 @@ public class RecyclerViewActivity extends ActionBarActivity implements AbsHListV
 
         ArrayList<Integer> mData = new ArrayList<>();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 106; i++) {
             mData.add(100);
         }
 
         mHorizontalListAdapter = new HorizontalListAdapter(this, mData);
         mHListView.setAdapter(mHorizontalListAdapter);
-        mHListView.setOnScrollListener(this);
+        mHListView.setOnTouchListener(this);
 
         mVListView = (ListView) findViewById(R.id.vListView);
-        mVerticalListAdapter = new VerticalListAdapter(this, mData);
+        ArrayList<Integer> mData1 = new ArrayList<>();
+
+        for (int i = 0; i < mChannels.size(); i++) {
+            mData1.add(100);
+        }
+        mVerticalListAdapter = new VerticalListAdapter(this, mData1);
         mVListView.setAdapter(mVerticalListAdapter);
-        mVListView.setOnScrollListener(this);
+        mVListView.setOnTouchListener(this);
 
-    }
 
-    /**
-     * Horizontal ListView scroll listener
-     */
+        mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                //Remove it here unless you want to get this callback for EVERY
+                //layout pass, which can get you into infinite loops if you ever
+                //modify the layout from within this method.
+                mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
 
-    @Override
-    public void onScrollStateChanged(AbsHListView absHListView, int scrollState) {
-        
-    }
-
-    @Override
-    public void onScroll(AbsHListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                mVerticalListAdapter.setItemHeight(mRecyclerView.getHeight()/3);
+                //Now you can get the width and height from content
+            }
+        });
 
     }
 
@@ -151,16 +155,11 @@ public class RecyclerViewActivity extends ActionBarActivity implements AbsHListV
     }
 
 
-    /**
-     * Vertical ListView scroll listener
-     */
     @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
+    public boolean onTouch(View v, MotionEvent event) {
 
-    }
+        mRecyclerView.dispatchTouchEvent(event);
 
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
+        return false;
     }
 }
