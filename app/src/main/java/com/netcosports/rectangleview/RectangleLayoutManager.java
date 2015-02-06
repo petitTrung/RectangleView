@@ -89,13 +89,14 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
         width = getWidth();
         height = getHeight();
+//        height = 800;
 
         /**
          * Initialize top & bottom of view for a given channel
          */
         for (int i = 0; i < top.length; i++) {
-            top[i] = i * height / 3;
-            bottom[i] = (i + 1) * height / 3;
+            top[i] = i * height / 4;
+            bottom[i] = (i + 1) * height / 4;
         }
 
         /**
@@ -206,10 +207,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-    }
-
-    public int getItemHeight() {
-        return height/3;
     }
 
     /**
@@ -590,7 +587,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         int scrolledY;
 
         if (dy > 0) { //Up
-            int distance = mChannels.size() * height / 3 - verticalScrollingDistance;
+            int distance = mChannels.size() * height / 4 - verticalScrollingDistance;
             if (dy < distance) {
                 verticalScrollingDistance += dy;
 

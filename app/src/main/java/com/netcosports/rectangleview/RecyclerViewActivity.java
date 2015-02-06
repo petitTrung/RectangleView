@@ -90,10 +90,10 @@ public class RecyclerViewActivity extends ActionBarActivity implements RecyclerV
                 //modify the layout from within this method.
                 mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
 
-                mVerticalListAdapter.setItemHeight(mRecyclerView.getHeight()/3);
+                mVerticalListAdapter.setItemHeight(mRecyclerView.getHeight()/4);
                 //Now you can get the width and height from content
 
-                mRecyclerView.scrollBy(800, 0);
+                //mRecyclerView.scrollBy(800, 0);
             }
         });
 
