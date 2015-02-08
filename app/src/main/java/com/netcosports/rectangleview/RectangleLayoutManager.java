@@ -119,6 +119,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             top[i] = i * itemHeight;
             bottom[i] = (i + 1) * itemHeight;
         }
+        height = bottom[bottom.length - 1];
 
         /**
          * Temporarily detach and scrap all currently attached child views if existed.
@@ -496,7 +497,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         for (int i = 0; i < childCount; i++) {
             final View v = getChildAt(i);
 
-            if (getDecoratedRight(v) >= 0 &&
+            if (getDecoratedRight(v) >= 30 &&
                     getDecoratedLeft(v) <= width) {
                 if (!foundFirst) {
                     first = i;

@@ -37,13 +37,13 @@ public class RecyclerViewActivity extends ActionBarActivity implements RecyclerV
         mChannels.add(new Channel(0, Program.generateFirstDummyPrograms()));
         mChannels.add(new Channel(1, Program.generateSecondDummyPrograms()));
         mChannels.add(new Channel(2, Program.generateThirdDummyPrograms()));
-        mChannels.add(new Channel(3, Program.generateFourthDummyPrograms()));
-        mChannels.add(new Channel(4, Program.generateFifthDummyPrograms()));
-        mChannels.add(new Channel(5, Program.generateSixthDummyPrograms()));
-        mChannels.add(new Channel(6, Program.generateSeventhDummyPrograms()));
+//        mChannels.add(new Channel(3, Program.generateFourthDummyPrograms()));
+//        mChannels.add(new Channel(4, Program.generateFifthDummyPrograms()));
+//        mChannels.add(new Channel(5, Program.generateSixthDummyPrograms()));
+//        mChannels.add(new Channel(6, Program.generateSeventhDummyPrograms()));
 
         SimpleAdapter adapter = new SimpleAdapter(this, mChannels);
-        mLayoutManager = new RectangleLayoutManager(this, new ArrayList<Channel>());
+        mLayoutManager = new RectangleLayoutManager(this, mChannels);
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setHasFixedSize(true);
@@ -86,30 +86,30 @@ public class RecyclerViewActivity extends ActionBarActivity implements RecyclerV
         mVListView.setOnScrollListener(mVerticalScrollingDistanceCalculator);
 
 
-        new CountDownTimer(3000, 1000) {
-
-            public void onTick(long millisUntilFinished) {
-
-            }
-
-            public void onFinish() {
-                mLayoutManager.setData(mChannels);
-            }
-        }.start();
-
-        new CountDownTimer(6000, 1000) {
-
-            public void onTick(long millisUntilFinished) {
-
-            }
-
-            public void onFinish() {
-                mChannels.add(new Channel(7, Program.generateSeventhDummyPrograms()));
-                mLayoutManager.setData(mChannels);
-                mLinearLayoutManager.scrollToPositionWithOffset(0, 0);
-                mVListView.smoothScrollToPositionFromTop(0, 0);
-            }
-        }.start();
+//        new CountDownTimer(3000, 1000) {
+//
+//            public void onTick(long millisUntilFinished) {
+//
+//            }
+//
+//            public void onFinish() {
+//                mLayoutManager.setData(mChannels);
+//            }
+//        }.start();
+//
+//        new CountDownTimer(6000, 1000) {
+//
+//            public void onTick(long millisUntilFinished) {
+//
+//            }
+//
+//            public void onFinish() {
+//                mChannels.add(new Channel(7, Program.generateSeventhDummyPrograms()));
+//                mLayoutManager.setData(mChannels);
+//                mLinearLayoutManager.scrollToPositionWithOffset(0, 0);
+//                mVListView.smoothScrollToPositionFromTop(0, 0);
+//            }
+//        }.start();
     }
 
     /**
