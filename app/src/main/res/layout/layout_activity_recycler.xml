@@ -3,12 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <it.sephiroth.android.library.widget.HListView
-        android:id="@+id/hListView"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/horizontalRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="30dip"
         android:layout_marginLeft="30dip"
-        android:background="#11000000" />
+        android:scrollbars="horizontal" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,6 +21,9 @@
             android:background="#11000000"
             android:divider="@null"
             android:dividerHeight="0dp"
+            android:focusable="false"
+            android:clickable="false"
+            android:focusableInTouchMode="false"
             android:id="@+id/vListView" />
 
         <com.netcosports.rectangleview.RecyclerView

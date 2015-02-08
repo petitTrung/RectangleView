@@ -24,6 +24,7 @@ public class VerticalListAdapter extends BaseAdapter {
         mContext = context;
         mData = list;
         mInflater = LayoutInflater.from(context);
+        itemHeight = ConvertHelper.toPixels(mContext.getResources().getInteger(R.integer.rectangle_item_height), mContext.getResources().getDisplayMetrics());
     }
 
     @Override
@@ -53,10 +54,5 @@ public class VerticalListAdapter extends BaseAdapter {
         textView.setHeight(itemHeight);
 
         return convertView;
-    }
-
-    public void setItemHeight(int itemHeight) {
-        this.itemHeight = itemHeight;
-        notifyDataSetChanged();
     }
 }

@@ -13,6 +13,10 @@ public class Channel {
     public Channel(int channel, ArrayList<Program> programs) {
         mChannel = channel;
         mPrograms = programs;
+
+        for (Program program : mPrograms) {
+            program.channel = channel;
+        }
     }
 
 }

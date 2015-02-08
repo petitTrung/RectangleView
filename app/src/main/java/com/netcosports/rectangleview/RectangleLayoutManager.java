@@ -15,7 +15,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
     private Context mContext;
     private ArrayList<Channel> mChannels;
     public ArrayList<Program> mPrograms;
-    private int[] sizes;
 
     /**
      * This element allows us to know if we reach some news Childs View
@@ -43,24 +42,40 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     private int[] top;
     private int[] bottom;
+    private int itemHeight;
 
     public RectangleLayoutManager(Context context, ArrayList<Channel> channels) {
         mContext = context;
         mChannels = channels;
 
-        sizes = new int[channels.size()];
-
         mPrograms = new ArrayList<>();
 
-        for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = mChannels.get(i).mPrograms.size();
+        for (int i = 0; i < channels.size(); i++) {
             mPrograms.addAll(mChannels.get(i).mPrograms);
         }
 
         top = new int[channels.size()];
         bottom = new int[channels.size()];
+        itemHeight = ConvertHelper.toPixels(mContext.getResources().getInteger(R.integer.rectangle_item_height), mContext.getResources().getDisplayMetrics());
 
         Program.sortProgram(mPrograms);
+    }
+
+    public void setData(ArrayList<Channel> channels) {
+        mChannels = channels;
+        mPrograms = new ArrayList<>();
+
+        for (int i = 0; i < channels.size(); i++) {
+            mPrograms.addAll(mChannels.get(i).mPrograms);
+        }
+
+        top = new int[channels.size()];
+        bottom = new int[channels.size()];
+        itemHeight = ConvertHelper.toPixels(mContext.getResources().getInteger(R.integer.rectangle_item_height), mContext.getResources().getDisplayMetrics());
+
+        Program.sortProgram(mPrograms);
+
+        requestLayout();
     }
 
     @Override
@@ -89,32 +104,21 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
         width = getWidth();
         height = getHeight();
-//        height = 800;
 
         /**
          * Initialize top & bottom of view for a given channel
+         *
+         * For ex :
+         *
+         * top[0] = 0, bottom[0] = 200
+         * top[1] = 200, bottom[0] = 400
+         * top[2] = 4, bottom[0] = 600
+         *
          */
         for (int i = 0; i < top.length; i++) {
-            top[i] = i * height / 4;
-            bottom[i] = (i + 1) * height / 4;
+            top[i] = i * itemHeight;
+            bottom[i] = (i + 1) * itemHeight;
         }
-
-        /**
-         *
-         * 1/. If we start filling from scratch (1st time - filling), top = 0
-         *
-         * 2/. In case of changing DataSet (getChildCount() > 0), we do not initialize all of views from 0 and
-         * we do not scroll to position [0]; we re-initialize all of views from the "actual first visible position"
-         * that means we re-initialize from the "mFirstPosition", top = top of the "actual first visible position"
-         *
-         */
-//        final View oldFirstView = getChildCount() > 0 ? getChildAt(0) : null;
-//        int oldTop = 0;
-//        int oldLeft = 0;
-//        if (oldFirstView != null) {
-//            oldTop = oldFirstView.getTop();
-//            oldLeft = oldFirstView.getLeft();
-//        }
 
         /**
          * Temporarily detach and scrap all currently attached child views if existed.
@@ -126,16 +130,11 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
          */
         detachAndScrapAttachedViews(recycler);
 
-//        int top = oldTop;
-//        int left = oldLeft;
-//        int right = 0;
-//        int bottom = 0;
-
         /**
          * Returns the number of items in the adapter bound to the parent RecyclerView.
          *
          * Remember : getItemCount() return the number of all views or = mData.size()
-         *            getChildCount() return the number of all actuals Childs in RecyclerViews - not necessarily
+         *            getChildCount() return the number of all actuals Childs attached to RecyclerViews - not necessarily
          *
          * We should not use getChildCount() here because for the 1st time filling; it does not know how many child is
          * has to fill. We start filling
@@ -162,17 +161,19 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
              *
              * Priority :
              *
-             * Recycler-Pool > Creating a fresh View
+             * Firstly, Searching in Recycler-Pool
+             * Then if there isn't any View which matches, Creating a new fresh View
+             *
              */
             View v = recycler.getViewForPosition(i);
 
             /**
-             * Adding this View to current RecyclerView for the i-th position
+             * Adding this View to current RecyclerView as the i-th position
              */
             addView(v, i);
 
             /**
-             * Mesuring this View
+             * Measuring this View
              *
              * If the RecyclerView can be scrolled in either dimension the caller may
              * pass 0 as the widthUsed or heightUsed parameters as they will be irrelevant.
@@ -185,7 +186,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
              *
              * Remember that top & left of childView were fixed by it's channel
              *
-             * more Detail : onInitialLayout(int, int)
              */
             onInitialLayout(v);
 
@@ -199,6 +199,9 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             } else {
                 needFill = false;
 
+                /**
+                 * For now the RecycleView Params are MATCH_PARENT
+                 */
                 horizontalScrollingDistance = width;
                 verticalScrollingDistance = height;
 
@@ -206,8 +209,18 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
                 mNextIndexInverse = getItemCount();
             }
         }
-
     }
+
+    private void onInitialLayout(final View v) {
+        if (v.getTag() != null) {
+            Program program = (Program) v.getTag();
+
+            if (program != null) {
+                layoutDecorated(v, program.start_time, top[program.channel], program.end_time, bottom[program.channel]);
+            }
+        }
+    }
+
 
     /**
      * HORIZONTAL CONFIG
@@ -443,15 +456,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
         return null;
     }
 
-    private void onInitialLayout(final View v) {
-        if (v.getTag() != null) {
-            Program program = (Program) v.getTag();
-
-            if (program != null) {
-                layoutDecorated(v, program.start_time, top[program.channel - 1], program.end_time, bottom[program.channel - 1]);
-            }
-        }
-    }
 
     private void onLayoutRightView(final View v) {
         if (mNextIndex < mCount) {
@@ -461,7 +465,7 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             int right = left + program.duration;
 
             if (program != null) {
-                layoutDecorated(v, left, top[program.channel - 1], right, bottom[program.channel - 1]);
+                layoutDecorated(v, left, top[program.channel], right, bottom[program.channel]);
             }
         }
     }
@@ -474,65 +478,36 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             int left = right - program.duration;
 
             if (program != null) {
-                layoutDecorated(v, left, top[program.channel - 1], right, bottom[program.channel - 1]);
+                layoutDecorated(v, left, top[program.channel], right, bottom[program.channel]);
             }
         }
     }
 
-    @Override
-    public boolean isSmoothScrolling() {
-        return true;
-    }
-
+    /**
+     * Put useless Child in to Recycler-Pool
+     * @param recycler
+     */
     public void recycleViewsOutOfBounds(RecyclerView.Recycler recycler) {
         final int childCount = getChildCount();
         boolean foundFirst = false;
         int first = 0;
         int last = 0;
 
-//        ArrayList<Program> childsOrdered = new ArrayList<>();
-
         for (int i = 0; i < childCount; i++) {
             final View v = getChildAt(i);
 
-//            Program program = (Program) v.getTag();
-
-            if (getDecoratedRight(v) < 0) {
-//                mNextIndexInverse = program.positionOrderedByEndTime;
-            } else if (getDecoratedRight(v) >= 0 &&
+            if (getDecoratedRight(v) >= 0 &&
                     getDecoratedLeft(v) <= width) {
                 if (!foundFirst) {
                     first = i;
                     foundFirst = true;
                 }
                 last = i;
-//                childsOrdered.add(program);
             }
         }
 
         mNextIndex = ((Program) getChildAt(last).getTag()).positionOrderedByStartTime + 1;
         mNextIndexInverse = ((Program) getChildAt(0).getTag()).positionOrderedByEndTime + 1;
-
-//        Program program = getProgramByIndexInverse();
-//        if (program == null) {
-//            mNextIndex = getChildCount();
-//        }
-//        else {
-//            mNextIndex = program.positionOrderedByStartTime + getChildCount() + 1;
-//        }
-
-
-//        if (childsOrdered.size() > 0) {
-//            Collections.sort(childsOrdered, new Comparator<Program>() {
-//                @Override
-//                public int compare(Program lhs, Program rhs) {
-//                    return (lhs.positionOrderedByStartTime - rhs.positionOrderedByStartTime);
-//                }
-//            });
-//            mNextIndex = childsOrdered.get(childsOrdered.size() - 1).positionOrderedByStartTime + 1;
-//        }
-
-//        mNextIndex = ((Program)getChildAt(last).getTag()).positionOrderedByStartTime + 1;
 
         Log.i("childCount", "" + childCount);
         Log.i("last", "" + last);
@@ -567,11 +542,13 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     /**
      * We distinct two cases :
-     *
+     * <p/>
      * dy < 0 : RecyclerView is pulling down or flinging down (pull or fling from top to bottom) : all views are scrolling up (ex : index 50 -> 40)
      * dy > 0 : RecyclerView is pulling up or flinging up (pull or fling from bottom to top) : all views are scrolling down (ex : index 40 -> 50)
-     *
+     * <p/>
      * Pay attention : when we pull or fling the view (even if there is no possible additional view : dy take a value # 0)
+     *
+     * Must modify values top[i] & bottom[i]
      *
      * @param dy
      * @param recycler
@@ -581,40 +558,52 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        /**
-         * Must modify values top[i] & bottom[i]
-         */
         int scrolledY;
 
+        /**
+         * maximum_distance = mChannels.size() * itemHeight
+         *
+         * if (verticalScrollingDistance + dy) < maximum_distance, we can still pull or fling up the RecyclerView
+         * else : we can pull or fling up only (maximum_distance - verticalScrollingDistance) px
+         *
+         */
         if (dy > 0) { //Up
-            int distance = mChannels.size() * height / 4 - verticalScrollingDistance;
+            int distance = mChannels.size() * itemHeight - verticalScrollingDistance;
             if (dy < distance) {
                 verticalScrollingDistance += dy;
 
-                offsetChildrenVertical(-dy);
+                offsetChildrenVertical(-dy); //top of all childs decrease
 
                 scrolledY = -dy;
             } else {
                 verticalScrollingDistance += distance;
 
-                offsetChildrenVertical(-distance);
+                offsetChildrenVertical(-distance); //top of all childs decrease
 
                 scrolledY = -distance;
             }
 
-        } else { //Down
+        }
+        /**
+         * maximum_distance = verticalScrollingDistance - height
+         *
+         * if (-dy) < maximum_distance, we can still pull or fling down the RecyclerView
+         * else : we can pull or fling down only (verticalScrollingDistance - height) px
+         *
+         */
+        else { //Down
             int distance = height - verticalScrollingDistance;
 
             if (dy > distance) {
                 verticalScrollingDistance += dy;
 
-                offsetChildrenVertical(-dy);
+                offsetChildrenVertical(-dy); //top of all childs increase
 
                 scrolledY = -dy;
             } else {
                 verticalScrollingDistance += distance;
 
-                offsetChildrenVertical(-distance);
+                offsetChildrenVertical(-distance); //top of all childs increase
 
                 scrolledY = -distance;
             }
@@ -625,12 +614,6 @@ public class RectangleLayoutManager extends RecyclerView.LayoutManager {
             bottom[i] += scrolledY;
         }
 
-        /**
-         * put All Useless Views to Recycle-Pool
-         */
-        //recycleViewsOutOfBounds(recycler);
-
         return -scrolledY;
-//        return dy;
     }
 }
