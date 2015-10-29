@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_app">#f1f1f1</color>
+    <color name="background_toolbar">#ADADAD</color>
+    <color name="background_statusbar">#ff828282</color>
+    <color name="default_accent">#20D400</color>
+    <color name="text_primary">#000000</color>
+
+</resources>
